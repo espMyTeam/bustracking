@@ -1,11 +1,11 @@
 <?php
-	header('Access-Control-Allow-Headers: Access-Control-Allow-Headers,Access-Control-Allow-Methods,Content-Type, Authorization, X-Requested-With,Access-Control-Allow-Credentials,Access-Control-Allow-Origin');
-		header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
-		header('Access-Control-Allow-Credentials: true');
-		header('Access-Control-Allow-Methods: REQUEST, GET, POST');
+	// header('Access-Control-Allow-Headers: Access-Control-Allow-Headers,Access-Control-Allow-Methods,Content-Type, Authorization, X-Requested-With,Access-Control-Allow-Credentials,Access-Control-Allow-Origin');
+	// 	header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
+	// 	header('Access-Control-Allow-Credentials: true');
+	// 	header('Access-Control-Allow-Methods: REQUEST, GET, POST');
 
 //$_POST['ligne']="10";
-	if(isset($_POST['ligne'])){
+	if(isset($_GET['ligne'])){
 	$ligne = "10";	
 		
 		if(file_exists("base_conf.php")){

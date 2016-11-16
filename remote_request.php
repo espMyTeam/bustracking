@@ -33,7 +33,8 @@
 			$id_bus = $base->addBus($matricule);
 		}
 
-		else if($id_bus != -1 AND $sms[0] == "bus"){ 
+		//ajouter la nouvelle position
+		if($id_bus != -1 AND $sms[0] == "bus"){ 
 			//ajouter la nouvelle position dans la base de données
 			$ladate = "20" . $sms[10][4] . $sms[10][5] . "-" . $sms[10][2] . $sms[10][3] . "-" . $sms[10][0] . $sms[10][1];
 			$lheure = $sms[9][0] . $sms[9][1] . ":" . $sms[9][2] . $sms[9][3] . ":" . $sms[9][4] . $sms[9][5];

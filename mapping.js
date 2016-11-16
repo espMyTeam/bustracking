@@ -68,9 +68,9 @@ window.onload=function(){
 	})
 
 	L.Realtime.reqwest({
-		url: 'position_bus.php',
-		method: "post",
-		crossOrigin: true,
+		url: './position_bus.php',
+		method: "get",
+		//crossOrigin: true,
 		type: 'json',
 		data: {'ligne': "10"},
 		async: true
