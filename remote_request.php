@@ -28,8 +28,13 @@
 		$id_bus = $base->selectBusByMatricule($matricule)[0][0];
 
 
-		if($id_bus != -1){
-			//ajouter nouvelle position dans la base de données
+		//ajouter le bus s'il n'est pas dans la base de données
+		if($id_bus == 0 AND $sms[0] == "bus"){ 
+			$id_bus = $base->addBus($matricule);
+		}
+
+		else if($id_bus != -1 AND $sms[0] == "bus"){ 
+			//ajouter la nouvelle position dans la base de données
 			$ladate = "20" . $sms[10][4] . $sms[10][5] . "-" . $sms[10][2] . $sms[10][3] . "-" . $sms[10][0] . $sms[10][1];
 			$lheure = $sms[9][0] . $sms[9][1] . ":" . $sms[9][2] . $sms[9][3] . ":" . $sms[9][4] . $sms[9][5];
 			
@@ -40,8 +45,9 @@
 
 			//mettre à jour le sens s'il le faut
 			Controller::updateBusSens($base, $id_bus, doubleval($sms[4]), doubleval($sms[5]));
-
 		}
+
+		
 		
 		//echo "bien reussie";
 		
