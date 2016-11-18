@@ -38,7 +38,7 @@ window.onload=function(){
 			            id: 1
 			        },
 			        geometry: {
-			            type: 'LineString',
+			            type: 'Point',
 			            coordinates: []
 			        }
 	},
@@ -68,9 +68,9 @@ window.onload=function(){
 	})
 
 	L.Realtime.reqwest({
-		url: './position_bus.php',
+		url: 'position_bus.php',
 		method: "get",
-		//crossOrigin: true,
+		crossOrigin: true,
 		type: 'json',
 		data: {'ligne': "10"},
 		async: true
@@ -83,21 +83,29 @@ window.onload=function(){
 			trailCoords.push([data.allee.position.lng, data.allee.position.lat]);
 			trailCoords.splice(0, Math.max(0, trailCoords.length - 5));
 
-			if(marker_allee)
-				update_marker_bus_a(data.allee.position.lat, data.allee.position.lng, "Bus<br/>Matricule:"+data.allee.bus.matricule);
-			else
-	        	marker_allee = ajout_marker_bus(data.allee.position.lat, data.allee.position.lng, "Bus<br/>Matricule:"+data.allee.bus.matricule, bus_icon_pal);
+			//if(marker_allee)
+				markeur_allee = ajout_marker_bus(data.allee.position.lat, data.allee.position.lng, "Bus<br/>Matricule:"+data.allee.bus.matricule, bus_icon_pal);
+			//else
+	        //	marker_allee = ajout_marker_bus(data.allee.position.lat, data.allee.position.lng, "Bus<br/>Matricule:"+data.allee.bus.matricule, bus_icon_pal);
 	        //mettre à jour le tableau
 	        document.getElementById("loc_bus_palais").innerHTML = "latitude:"+data.allee.position.lat+",longitude:"+data.allee.position.lng;
 	        document.getElementById("dist_bus_palais").innerHTML = (parseInt(data.allee.position.reste)/1000.0)+"";
 	        document.getElementById("arret_bus_palais").innerHTML = data.allee.arrets.nom//+",latitude:"+parseFloat(data.allee.arrets.lat).toFixed(6)+", longitude:"+parseFloat(data.allee.arrets.lng).toFixed(6);
 	        document.getElementById("rest_bus_palais").innerHTML = data.allee.arrets.reste;
-	        document.getElementById("stat_bus_palais").innerHTML = "Bus vers l'ESP à "+(parseInt(data.allee.position.reste)/1000.0)+" km de l'ESP, "+data.allee.arrets.reste+" arret(s) restant(s)";
 
+	        if(parseInt(data.allee.arrets.reste) == 0 && (parseInt(data.allee.position.reste)/1000.0) == 0){
+	        	 document.getElementById("stat_bus_palais").innerHTML = "Le bus est arrivé ...";
+	        }else if(parseInt(data.allee.arrets.reste) == -1){
+	        	document.getElementById("stat_bus_palais").innerHTML = "Le bus a dépassé. Attendre le Prochain bus ...";
+	        }else{
+	        	document.getElementById("stat_bus_palais").innerHTML = "Bus vers l'ESP à "+(parseInt(data.allee.position.reste)/1000.0)+" km de l'ESP, "+data.allee.arrets.reste+" arret(s) restant(s)";
+	        }
 	        document.getElementById("marquee-pal-1").hidden = false;
 	        //document.getElementById("marquee-pal-2").hidden = true;
 	        
-	        marker_next_allee = ajout_marker_arret(data.allee.arrets.lat,data.allee.arrets.lng, "Arret le plus proche du bus de Palais -> ESP");		
+	        marker_next_allee = ajout_marker_arret(data.allee.arrets.lat,data.allee.arrets.lng, "Prochain arret du bus le plus proche de l'ESP sens liberté 5 -> palais ");	
+
+	        // marker_next_allee = ajout_marker_arret(data.allee.arrets.lat,data.allee.arrets.lng, "Arret le plus proche du bus de liberté 5 -> ESP");		
 
 	        //marker_next_allee = ajout_marker_arret(data.allee.arrets.lat,data.allee.arrets.lng, "arret allee le plus proche<br/>"+"Arret<br/>N°:"+data.allee.arrets.nom+"<br/>Latitude:"+parseFloat(data.allee.arrets.lat).toFixed(6)+"<br/>Longitude:"+parseFloat(data.allee.arrets.lng).toFixed(6));		
 		}else{
@@ -118,17 +126,24 @@ window.onload=function(){
 			trailCoords.push([data.retour.position.lng, data.retour.position.lat]);
 			trailCoords.splice(0, Math.max(0, trailCoords.length - 5));
 
-			if(marker_retour)
-				update_marker_bus_r(data.retour.position.lat, data.retour.position.lng, "Bus<br/>Matricule:"+data.retour.bus.matricule);
-			else
-	        	marker_retour = ajout_marker_bus(data.retour.position.lat, data.retour.position.lng, "Bus<br/>Matricule:"+data.retour.bus.matricule, bus_icon_lib);
+			//if(marker_retour)
+			marker_retour = ajout_marker_bus(data.retour.position.lat, data.retour.position.lng, "Bus<br/>Matricule:"+data.retour.bus.matricule, bus_icon_lib);
+		//	else
+	        	//marker_retour = ajout_marker_bus(data.retour.position.lat, data.retour.position.lng, "Bus<br/>Matricule:"+data.retour.bus.matricule, bus_icon_lib);
 	        //mettre à jour le tableau
 	        document.getElementById("loc_bus_liberte").innerHTML = "latitude:"+data.retour.position.lat+",longitude:"+data.retour.position.lng;
 	        document.getElementById("dist_bus_liberte").innerHTML = (parseInt(data.retour.position.reste)/1000.0)+"";
 	        document.getElementById("arret_bus_liberte").innerHTML = data.retour.arrets.nom//+",latitude:"+parseFloat(data.retour.arrets.lat).toFixed(6)+", longitude:"+parseFloat(data.retour.arrets.lng).toFixed(6);
 	        document.getElementById("rest_bus_liberte").innerHTML = data.retour.arrets.reste;
 
-	        document.getElementById("stat_bus_liberte").innerHTML = "Bus vers l'ESP à "+(parseInt(data.retour.position.reste)/1000.0)+" km, "+data.retour.arrets.reste+" arret(s) restant(s)";
+	        if(parseInt(data.retour.arrets.reste) == 0){
+	        	 document.getElementById("stat_bus_liberte").innerHTML = "Le bus est arrivé ...";
+	        }else if(parseInt(data.retour.arrets.reste) == -1){
+	        	document.getElementById("stat_bus_liberte").innerHTML = "Le bus a dépassé. Attendre le Prochain bus ...";
+	        }else{
+	        	document.getElementById("stat_bus_liberte").innerHTML = "Bus vers l'ESP à "+(parseInt(data.retour.position.reste)/1000.0)+" km, "+data.retour.arrets.reste+" arret(s) restant(s)";
+	        }
+
 
 	        document.getElementById("marquee-lib-1").hidden = false;
 	        //document.getElementById("marquee-lib-2").hidden = true;
@@ -136,7 +151,9 @@ window.onload=function(){
 	        
 	        	        //marker_next_retour = ajout_marker_arret(data.retour.arrets.lat,data.retour.arrets.lng, "arret retour le plus proche<br/>"+"Latitude:"+parseFloat(data.retour.arrets.lat).toFixed(6)+"<br/>Longitude:"+parseFloat(data.retour.arrets.lng).toFixed(6));		
 
-	        marker_next_retour = ajout_marker_arret(data.retour.arrets.lat,data.retour.arrets.lng, "Arret le plus proche du bus liberté 5 -> ESP");		
+	        marker_next_retour = ajout_marker_arret(data.retour.arrets.lat,data.retour.arrets.lng, "Prochain arret du bus le plus proche de l'ESP sens palais -> liberté 5");
+
+	        //marker_next_retour = ajout_marker_arret(data.retour.arrets.lat,data.retour.arrets.lng, "Arret le plus proche du bus palais -> ESP");		
 		}else{
 			//marker_retour = "";
 	        //mettre à jour le tableau
@@ -184,7 +201,7 @@ function ajout_marker_client(lat, lng) {
 }
 
 function ajout_marker_arret(lat, lng, libelle) {
-	var marker = L.marker([parseFloat(lat).toFixed(6), parseFloat(lng).toFixed(6)]).addTo(map);
+	var marker = L.marker([parseFloat(lat).toFixed(6), parseFloat(lng).toFixed(6)], {icon: arret_icon, iconSize: [30, 30]}).addTo(map);
     marker.bindPopup(libelle)
         .on('mouseover', function(e){ marker.openPopup(); })
         .on('mouseout', function(e){ marker.closePopup(); });
@@ -193,7 +210,7 @@ function ajout_marker_arret(lat, lng, libelle) {
 }
 
 function ajout_marker_bus(lat, lng, libelle, bus_icon) {
-	var marker = L.marker([parseFloat(lat).toFixed(6), parseFloat(lng).toFixed(6)], {icon: bus_icon, iconSize: [45, 61]}).addTo(map);
+	var marker = L.marker([parseFloat(lat).toFixed(6), parseFloat(lng).toFixed(6)], {icon: bus_icon}).addTo(map);
     marker.bindPopup(libelle+"<br/>latitude:"+lat+", longitude:"+lng)
         .on('mouseover', function(e){ marker.openPopup(); })
         .on('mouseout', function(e){ marker.closePopup(); });
@@ -303,7 +320,7 @@ function ajout_arrets(ligne){
             {
                 var valeur = data;
 				var arrets = valeur.split("*");
-				console.log(arrets);
+				//console.log(arrets);
 			          
 	           	for(var i=0; i<arrets.length; i++){
 	           		var arret = arrets[i];
@@ -315,7 +332,7 @@ function ajout_arrets(ligne){
 
 	           		var desc = "Arret<br/>N°:"+arret[10]+",arret:"+arret[11]+"<br/>Latitude:"+parseFloat(latitude).toFixed(6)+"<br/>Longitude:"+parseFloat(longitude).toFixed(6);
 	           		
-	           		//ajout_marker_arret(parseFloat(latitude).toFixed(6), parseFloat(longitude).toFixed(6), desc);
+	           		ajout_marker_arret(parseFloat(latitude).toFixed(6), parseFloat(longitude).toFixed(6), desc);
 
 	           }
             }, error: function() {
@@ -375,7 +392,7 @@ function addArretsToMap(){
 */
 function create_icone(image, shadow){
 	if(shadow)
-		return new LeafIcon({iconUrl: image, shadowUrl: shadow, iconSize: [45, 61]});
+		return new LeafIcon({iconUrl: image, shadowUrl: shadow, iconSize: [35, 31]});
 	else
-		return new LeafIcon({iconUrl: image,  iconSize: [45, 61]});
+		return new LeafIcon({iconUrl: image,  iconSize: [35, 31]});
 }

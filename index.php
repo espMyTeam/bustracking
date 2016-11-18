@@ -109,13 +109,13 @@
 						<h2 class="h2" style="color:red">Liberté 5</h2>
 					</div>
 					<div class="col-md-2">
-						<marquee direction="right" scrolldelay="300" hidden><h2 class="h2" id="marquee-pal-1"><img src='images/bus_to.png' style='height: 50px;'></h2></marquee>
+						<marquee direction="right" scrolldelay="300"><h2 class="h2" id="marquee-pal-1" hidden><img src='images/bus_to.png' style='height: 50px;'></h2></marquee>
 					</div>
 					<div class="col-md-1">
 						<h2 class="h2" style="color:blue">ESP</h2>
 					</div>
 					<div class="col-md-2">
-						<marquee direction="right" scrolldelay="300" hidden><h2 class="h2" id="marquee-pal-2"><img src='images/bus_to.png' style='height: 50px;'></h2></marquee>
+						<marquee direction="right" scrolldelay="300"><h2 class="h2" id="marquee-pal-2" hidden><img src='images/bus_to.png' style='height: 50px;'></h2></marquee>
 					</div>
 					<div class="col-md-1">
 						<h2 class="h2">Palais</h2>

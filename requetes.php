@@ -84,8 +84,19 @@
 			return $this->select($req, $array_params);
 		}
 
+
+		function selectArretLigne($id_ligne, $id_arret_ligne, $sens){
+			$req = "SELECT arret.id_arret,arret.latitude_arret,arret.longitude_arret,arretLigne.id_arretligne FROM arret,arretLigne WHERE arretLigne.sens=:sens AND arretLigne.id_ligne=:id_ligne AND arret.id_arret=arretLigne.id_arret AND arretLigne.num_arretDansLigne=:num";
+			$array_params = array(
+				":id_ligne" => $id_ligne,
+				":sens" => $sens,
+				":num" => $id_arret_ligne
+			);
+			return $this->select($req, $array_params);
+		}
+
 		function selectTerminus($id_ligne, $sens_bus){
-			if($sens_bus == "A")
+			if($sens_bus == "A") //vers palais
 				$sens = "R";
 			else
 				$sens = "A";
@@ -98,6 +109,7 @@
 			return $this->select($req, $array_params);
 		}
 
+		/* selectionner l'arret ESP correspondant au sens donne en parametre */
 		function selectArretEsp($id_ligne, $sens){
 			if($sens == "A")
 				$num = 17;
@@ -149,6 +161,8 @@
 			);
 			return $this->select($req, $array_params);
 		}
+
+
 
 		/* selectionner une ligne */
 		function selectLigne($id_ligne){

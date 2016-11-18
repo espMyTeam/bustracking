@@ -153,9 +153,9 @@
 					}
 					
 					$distance_restante = 0;
-					$nb = 0;
+					$nb = -1;
 					if($near_stop_id != -1){
-						
+						$nb = 0;
 						$near_arret = $arrets_zone[$near_stop_id];
 
 							
@@ -176,9 +176,23 @@
 					if(!isset($near_arret))
 						$near_arret = "";
 					else{
-						$nb = $nb-1;
-						if($nb==-1)
-							$nb=0;
+						//$nb = $nb-1;
+						//if($nb==-1)
+						//	$nb=0;
+
+
+						if($nb==0){ //voir si le bus a dépassé l'arret ESP ou non
+							if($sens_bus == "A")
+								$temp_val_bus = Controller::isBusBetween($base,$bus, 16, 17, "A");
+							else if($sens_bus == "R")
+								$temp_val_bus = Controller::isBusBetween($base,$bus, 10, 11, "R");
+
+
+							if($temp_val_bus == false )
+								$nb = -1;
+
+						}
+
 						$near_arret = array(
 							"nom" => $near_arret[1],
 							"lat" => $near_arret[2],
@@ -306,16 +320,16 @@
 				$ds_inc = 10;
 				$near_bus_id = -1;
 				for($j=0; $j<=20000; $j = $j + $ds_inc){
-						for($i=0; $i<count($all_bus); $i++){
-							
-							if(GPS::distance($lat_ref, $lng_ref, doubleval($all_bus[$i][3]), doubleval($all_bus[$i][4])) - $j <= $ds_inc){
-								$near_bus_id = $i;
-
-								break;
-							}
-						}
+					for($i=0; $i<count($all_bus); $i++){
 						
-						if($near_bus_id != -1) break;
+						if(GPS::distance($lat_ref, $lng_ref, doubleval($all_bus[$i][3]), doubleval($all_bus[$i][4])) - $j <= $ds_inc){
+							$near_bus_id = $i;
+
+							break;
+						}
+					}
+					
+					if($near_bus_id != -1) break;
 
 				}
 				if($near_bus_id != -1){
@@ -456,6 +470,19 @@
 					}
 					return $distance_restante;			
 			}
+
+
+			static function isBusBetween($base,$bus, $id_arret1, $id_arret2, $sens, $id_ligne=1){
+				$arret1 = $base->selectArretLigne($id_ligne, $id_arret1, $sens)[0];
+				$arret1 = $base->selectArretLigne($id_ligne, $id_arret2, $sens)[0];
+				$d1 = GPS::distance(doubleval($bus[3]), doubleval($bus[4]), doubleval($arret1[1]), doubleval($arret1[2]));
+				$d2 = GPS::distance(doubleval($bus[3]), doubleval($bus[4]), doubleval($arret2[1]), doubleval($arret2[2]));
+				$d12 = GPS::distance(doubleval($arret1[1]), doubleval($arret1[2]), doubleval($arret2[1]), doubleval($arret2[2]));
+				if($d1 <= $d12 && $d2 <= $d12)
+					return true;
+				else
+					return false;
+			}
 	}
 
 	/***************testes***********************/
@@ -469,13 +496,13 @@
 	//14.688140, -17.464442
 
 	//teste
-	//include_once("base_conf.php");
-	//include_once("requetes.php");
+	// include_once("base_conf.php");
+	// include_once("requetes.php");
 
-	//$base = new BaseDD(HOSTNAME,BASENAME,USERNAME,PASSWORD);
+	// $base = new BaseDD(HOSTNAME,BASENAME,USERNAME,PASSWORD);
 
-	//print_r(Controller::getNearBus($base, 1, "A"));
-//	print_r(Controller::selectNearBusTerminus($base, "10", "R"));
+	// //print_r(Controller::getNearBus($base, 1, "A"));
+	// print_r(Controller::selectNearBusTerminus($base, "10", "R"));
 	//print_r(Controller::selectNearBusTerminus($base, $_POST['ligne'], "A"));
 //	print_r(Controller::selectNearBusTerminus($base, "10", "A"));
 
