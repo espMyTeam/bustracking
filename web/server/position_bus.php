@@ -20,7 +20,7 @@
 					'allee' => Controller::selectNearBusTerminus($base, $ligne, "A"),
 					'retour' => Controller::selectNearBusTerminus($base, $ligne, "R") 
 					
-					);
+				);
 
 
 				//$resultats['retour'] = "{'bus':{'id_bus':'$id_bus','matricule':'$matricule','ligne':'$nom_ligne'},'position':[$latitude,$longitude]}";

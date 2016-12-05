@@ -202,19 +202,19 @@
 					}			
 
 					$resultats = array(
-							"bus" => array(
-								"id_bus" => $id_bus,
-								"matricule" => $matricule,
-								"ligne" => $nom_ligne
-							),
-							"position" => array(
-								'lat' => $latitude,
-								'lng' => $longitude,
-								'reste' => $distance_restante
-							),
-							"arrets" => $near_arret
-						);
-						return $resultats;
+						"bus" => array(
+							"id_bus" => $id_bus,
+							"matricule" => $matricule,
+							"ligne" => $nom_ligne
+						),
+						"position" => array(
+							'lat' => $latitude,
+							'lng' => $longitude,
+							'reste' => $distance_restante
+						),
+						"arrets" => $near_arret
+					);
+					return $resultats;
 
 				}
 		}
