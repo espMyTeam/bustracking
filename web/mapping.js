@@ -31,7 +31,7 @@ window.onload=function(){
 	map = L.map('map',{
 			center: [14.681293, -17.467403],
     		zoom: val_zoom
-		}),
+			}),
     trail = {
 			        type: 'Feature',
 			        properties: {
@@ -43,139 +43,138 @@ window.onload=function(){
 			        }
 	},
 	realtime = L.realtime(function(success, error) {
-			    	var data;
-			    	
-			    	if(ligne == undefined || ligne.value == undefined || ligne.value == null){
-			    		data = "10";
-			    		
-			    	}
-			    	else{
-			    		data = ligne.value;
+    	var data;
+    	
+    	if(ligne == undefined || ligne.value == undefined || ligne.value == null){
+    		data = "10";
+    		
+    	}
+    	else{
+    		data = ligne.value;
 
-					}
-
-	init_carte(ligne);
-	
-
-    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', { //http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
-			    attribution: 'DIC2TRS-ESP'
-	}).addTo(map);
-
-	
-
-	map.on('zoomend', function(e){
-		val_zoom = map.getZoom();
-	})
-
-	L.Realtime.reqwest({
-		url: 'position_bus.php',
-		method: "get",
-		crossOrigin: true,
-		type: 'json',
-		data: {'ligne': "10"},
-		async: true
-	}).then(function(data) {
-			        	
-		var trailCoords = trail.geometry.coordinates;
-		console.log(data);
-
-		if(data.allee.position){
-			trailCoords.push([data.allee.position.lng, data.allee.position.lat]);
-			trailCoords.splice(0, Math.max(0, trailCoords.length - 5));
-
-			//if(marker_allee)
-				markeur_allee = ajout_marker_bus(data.allee.position.lat, data.allee.position.lng, "Bus<br/>Matricule:"+data.allee.bus.matricule, bus_icon_pal);
-			//else
-	        //	marker_allee = ajout_marker_bus(data.allee.position.lat, data.allee.position.lng, "Bus<br/>Matricule:"+data.allee.bus.matricule, bus_icon_pal);
-	        //mettre à jour le tableau
-	        document.getElementById("loc_bus_palais").innerHTML = "latitude:"+data.allee.position.lat+",longitude:"+data.allee.position.lng;
-	        document.getElementById("dist_bus_palais").innerHTML = (parseInt(data.allee.position.reste)/1000.0)+"";
-	        document.getElementById("arret_bus_palais").innerHTML = data.allee.arrets.nom//+",latitude:"+parseFloat(data.allee.arrets.lat).toFixed(6)+", longitude:"+parseFloat(data.allee.arrets.lng).toFixed(6);
-	        document.getElementById("rest_bus_palais").innerHTML = data.allee.arrets.reste;
-
-	        if(parseInt(data.allee.arrets.reste) == 0 && (parseInt(data.allee.position.reste)/1000.0) == 0){
-	        	 document.getElementById("stat_bus_palais").innerHTML = "Le bus est arrivé ...";
-	        }else if(parseInt(data.allee.arrets.reste) == -1){
-	        	document.getElementById("stat_bus_palais").innerHTML = "Le bus a dépassé. Attendre le Prochain bus ...";
-	        }else{
-	        	document.getElementById("stat_bus_palais").innerHTML = "Bus vers l'ESP à "+(parseInt(data.allee.position.reste)/1000.0)+" km de l'ESP, "+data.allee.arrets.reste+" arret(s) restant(s)";
-	        }
-	        document.getElementById("marquee-pal-1").hidden = false;
-	        //document.getElementById("marquee-pal-2").hidden = true;
-	        
-	        marker_next_allee = ajout_marker_arret(data.allee.arrets.lat,data.allee.arrets.lng, "Prochain arret du bus le plus proche de l'ESP sens liberté 5 -> palais ");	
-
-	        // marker_next_allee = ajout_marker_arret(data.allee.arrets.lat,data.allee.arrets.lng, "Arret le plus proche du bus de liberté 5 -> ESP");		
-
-	        //marker_next_allee = ajout_marker_arret(data.allee.arrets.lat,data.allee.arrets.lng, "arret allee le plus proche<br/>"+"Arret<br/>N°:"+data.allee.arrets.nom+"<br/>Latitude:"+parseFloat(data.allee.arrets.lat).toFixed(6)+"<br/>Longitude:"+parseFloat(data.allee.arrets.lng).toFixed(6));		
-		}else{
-			//marker_allee = "";
-	        //mettre à jour le tableau
-	        document.getElementById("loc_bus_palais").innerHTML = "x";
-	        document.getElementById("dist_bus_palais").innerHTML = "x";
-	        document.getElementById("arret_bus_palais").innerHTML = "x";
-	        document.getElementById("rest_bus_palais").innerHTML = "x";
-
-	        document.getElementById("stat_bus_palais").innerHTML = " Pas de bus disponible vers l'ESP...";
-
-	        //document.getElementById("marquee-pal-2").hidden = false;
-	        document.getElementById("marquee-pal-1").hidden = true;
 		}
 
-		if(data.retour.position){
-			trailCoords.push([data.retour.position.lng, data.retour.position.lat]);
-			trailCoords.splice(0, Math.max(0, trailCoords.length - 5));
-
-			//if(marker_retour)
-			marker_retour = ajout_marker_bus(data.retour.position.lat, data.retour.position.lng, "Bus<br/>Matricule:"+data.retour.bus.matricule, bus_icon_lib);
-		//	else
-	        	//marker_retour = ajout_marker_bus(data.retour.position.lat, data.retour.position.lng, "Bus<br/>Matricule:"+data.retour.bus.matricule, bus_icon_lib);
-	        //mettre à jour le tableau
-	        document.getElementById("loc_bus_liberte").innerHTML = "latitude:"+data.retour.position.lat+",longitude:"+data.retour.position.lng;
-	        document.getElementById("dist_bus_liberte").innerHTML = (parseInt(data.retour.position.reste)/1000.0)+"";
-	        document.getElementById("arret_bus_liberte").innerHTML = data.retour.arrets.nom//+",latitude:"+parseFloat(data.retour.arrets.lat).toFixed(6)+", longitude:"+parseFloat(data.retour.arrets.lng).toFixed(6);
-	        document.getElementById("rest_bus_liberte").innerHTML = data.retour.arrets.reste;
-
-	        if(parseInt(data.retour.arrets.reste) == 0){
-	        	 document.getElementById("stat_bus_liberte").innerHTML = "Le bus est arrivé ...";
-	        }else if(parseInt(data.retour.arrets.reste) == -1){
-	        	document.getElementById("stat_bus_liberte").innerHTML = "Le bus a dépassé. Attendre le Prochain bus ...";
-	        }else{
-	        	document.getElementById("stat_bus_liberte").innerHTML = "Bus vers l'ESP à "+(parseInt(data.retour.position.reste)/1000.0)+" km, "+data.retour.arrets.reste+" arret(s) restant(s)";
-	        }
+		//init_carte(ligne);
 
 
-	        document.getElementById("marquee-lib-1").hidden = false;
-	        //document.getElementById("marquee-lib-2").hidden = true;
+		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', { //http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
+				    attribution: 'DIC2TRS-ESP'
+		}).addTo(map);
 
-	        
-	        	        //marker_next_retour = ajout_marker_arret(data.retour.arrets.lat,data.retour.arrets.lng, "arret retour le plus proche<br/>"+"Latitude:"+parseFloat(data.retour.arrets.lat).toFixed(6)+"<br/>Longitude:"+parseFloat(data.retour.arrets.lng).toFixed(6));		
+	
 
-	        marker_next_retour = ajout_marker_arret(data.retour.arrets.lat,data.retour.arrets.lng, "Prochain arret du bus le plus proche de l'ESP sens palais -> liberté 5");
+			map.on('zoomend', function(e){
+				val_zoom = map.getZoom();
+			})
 
-	        //marker_next_retour = ajout_marker_arret(data.retour.arrets.lat,data.retour.arrets.lng, "Arret le plus proche du bus palais -> ESP");		
-		}else{
-			//marker_retour = "";
-	        //mettre à jour le tableau
-	        document.getElementById("loc_bus_liberte").innerHTML = "x";
-	        document.getElementById("dist_bus_liberte").innerHTML = "x";
-	        document.getElementById("arret_bus_liberte").innerHTML = "x";
-	        document.getElementById("rest_bus_liberte").innerHTML = "x";
+			L.Realtime.reqwest({
+				url: 'server/position_bus.php',
+				method: "get",
+				crossOrigin: true,
+				type: 'json',
+				data: {'ligne': "10"},
+				async: true
+			}).then(function(data) {
+					        	
+				var trailCoords = trail.geometry.coordinates;
+				console.log(data);
 
-	        document.getElementById("stat_bus_liberte").innerHTML = "Pas de bus disponible vers l'ESP...";
-	        //document.getElementById("marquee-lib-2").hidden = false;
-	        document.getElementById("marquee-lib-1").hidden = true;
-		}
-		
+				if(data.allee.position){
+					trailCoords.push([data.allee.position.lng, data.allee.position.lat]);
+					trailCoords.splice(0, Math.max(0, trailCoords.length - 5));
+
+					//if(marker_allee)
+						markeur_allee = ajout_marker_bus(data.allee.position.lat, data.allee.position.lng, "Bus<br/>Matricule:"+data.allee.bus.matricule, bus_icon_pal);
+					//else
+			        //	marker_allee = ajout_marker_bus(data.allee.position.lat, data.allee.position.lng, "Bus<br/>Matricule:"+data.allee.bus.matricule, bus_icon_pal);
+			        //mettre à jour le tableau
+			        document.getElementById("loc_bus_palais").innerHTML = "latitude:"+data.allee.position.lat+",longitude:"+data.allee.position.lng;
+			        document.getElementById("dist_bus_palais").innerHTML = (parseInt(data.allee.position.reste)/1000.0)+"";
+			        document.getElementById("arret_bus_palais").innerHTML = data.allee.arrets.nom//+",latitude:"+parseFloat(data.allee.arrets.lat).toFixed(6)+", longitude:"+parseFloat(data.allee.arrets.lng).toFixed(6);
+			        document.getElementById("rest_bus_palais").innerHTML = data.allee.arrets.reste;
+
+			        if(parseInt(data.allee.arrets.reste) == 0 && (parseInt(data.allee.position.reste)/1000.0) == 0){
+			        	 document.getElementById("stat_bus_palais").innerHTML = "Le bus est arrivé ...";
+			        }else if(parseInt(data.allee.arrets.reste) == -1){
+			        	document.getElementById("stat_bus_palais").innerHTML = "Le bus a dépassé. Attendre le Prochain bus ...";
+			        }else{
+			        	document.getElementById("stat_bus_palais").innerHTML = "Bus vers l'ESP à "+(parseInt(data.allee.position.reste)/1000.0)+" km de l'ESP, "+data.allee.arrets.reste+" arret(s) restant(s)";
+			        }
+			        document.getElementById("marquee-pal-1").hidden = false;
+			        //document.getElementById("marquee-pal-2").hidden = true;
+			        
+			        marker_next_allee = ajout_marker_arret(data.allee.arrets.lat,data.allee.arrets.lng, "Prochain arret du bus le plus proche de l'ESP sens liberté 5 -> palais ");	
+
+			        // marker_next_allee = ajout_marker_arret(data.allee.arrets.lat,data.allee.arrets.lng, "Arret le plus proche du bus de liberté 5 -> ESP");		
+
+			        //marker_next_allee = ajout_marker_arret(data.allee.arrets.lat,data.allee.arrets.lng, "arret allee le plus proche<br/>"+"Arret<br/>N°:"+data.allee.arrets.nom+"<br/>Latitude:"+parseFloat(data.allee.arrets.lat).toFixed(6)+"<br/>Longitude:"+parseFloat(data.allee.arrets.lng).toFixed(6));		
+				}else{
+					//marker_allee = "";
+			        //mettre à jour le tableau
+			        document.getElementById("loc_bus_palais").innerHTML = "x";
+			        document.getElementById("dist_bus_palais").innerHTML = "x";
+			        document.getElementById("arret_bus_palais").innerHTML = "x";
+			        document.getElementById("rest_bus_palais").innerHTML = "x";
+
+			        document.getElementById("stat_bus_palais").innerHTML = " Pas de bus disponible vers l'ESP...";
+
+			        //document.getElementById("marquee-pal-2").hidden = false;
+			        document.getElementById("marquee-pal-1").hidden = true;
+				}
+
+				if(data.retour.position){
+					trailCoords.push([data.retour.position.lng, data.retour.position.lat]);
+					trailCoords.splice(0, Math.max(0, trailCoords.length - 5));
+
+					//if(marker_retour)
+					marker_retour = ajout_marker_bus(data.retour.position.lat, data.retour.position.lng, "Bus<br/>Matricule:"+data.retour.bus.matricule, bus_icon_lib);
+				//	else
+			        	//marker_retour = ajout_marker_bus(data.retour.position.lat, data.retour.position.lng, "Bus<br/>Matricule:"+data.retour.bus.matricule, bus_icon_lib);
+			        //mettre à jour le tableau
+			        document.getElementById("loc_bus_liberte").innerHTML = "latitude:"+data.retour.position.lat+",longitude:"+data.retour.position.lng;
+			        document.getElementById("dist_bus_liberte").innerHTML = (parseInt(data.retour.position.reste)/1000.0)+"";
+			        document.getElementById("arret_bus_liberte").innerHTML = data.retour.arrets.nom//+",latitude:"+parseFloat(data.retour.arrets.lat).toFixed(6)+", longitude:"+parseFloat(data.retour.arrets.lng).toFixed(6);
+			        document.getElementById("rest_bus_liberte").innerHTML = data.retour.arrets.reste;
+
+			        if(parseInt(data.retour.arrets.reste) == 0){
+			        	 document.getElementById("stat_bus_liberte").innerHTML = "Le bus est arrivé ...";
+			        }else if(parseInt(data.retour.arrets.reste) == -1){
+			        	document.getElementById("stat_bus_liberte").innerHTML = "Le bus a dépassé. Attendre le Prochain bus ...";
+			        }else{
+			        	document.getElementById("stat_bus_liberte").innerHTML = "Bus vers l'ESP à "+(parseInt(data.retour.position.reste)/1000.0)+" km, "+data.retour.arrets.reste+" arret(s) restant(s)";
+			        }
 
 
-        val_zoom = map.getZoom();
-		success({
-			                type: 'FeatureCollection',
-			                features: [data, trail]
-			            });
-			        })
-			        .catch(error);
+			        document.getElementById("marquee-lib-1").hidden = false;
+			        //document.getElementById("marquee-lib-2").hidden = true;
+
+			        
+			        	        //marker_next_retour = ajout_marker_arret(data.retour.arrets.lat,data.retour.arrets.lng, "arret retour le plus proche<br/>"+"Latitude:"+parseFloat(data.retour.arrets.lat).toFixed(6)+"<br/>Longitude:"+parseFloat(data.retour.arrets.lng).toFixed(6));		
+
+			        marker_next_retour = ajout_marker_arret(data.retour.arrets.lat,data.retour.arrets.lng, "Prochain arret du bus le plus proche de l'ESP sens palais -> liberté 5");
+
+			        //marker_next_retour = ajout_marker_arret(data.retour.arrets.lat,data.retour.arrets.lng, "Arret le plus proche du bus palais -> ESP");		
+				}else{
+					//marker_retour = "";
+			        //mettre à jour le tableau
+			        document.getElementById("loc_bus_liberte").innerHTML = "x";
+			        document.getElementById("dist_bus_liberte").innerHTML = "x";
+			        document.getElementById("arret_bus_liberte").innerHTML = "x";
+			        document.getElementById("rest_bus_liberte").innerHTML = "x";
+
+			        document.getElementById("stat_bus_liberte").innerHTML = "Pas de bus disponible vers l'ESP...";
+			        //document.getElementById("marquee-lib-2").hidden = false;
+			        document.getElementById("marquee-lib-1").hidden = true;
+				}
+				
+
+
+		        val_zoom = map.getZoom();
+				success({
+	                type: 'FeatureCollection',
+	                features: [data, trail]
+	            });
+	        }).catch(error);
 		}, {
 			interval: 10 * 1000
 	}).addTo(map);
