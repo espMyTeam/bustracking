@@ -10,6 +10,8 @@ var LeafIcon = L.Icon.extend({
 	    }
 });
 
+
+
 /*
 	créer les icones
 */
@@ -172,6 +174,7 @@ window.onload=function(){
 
 
 		        val_zoom = map.getZoom();
+
 				success({
 	                type: 'FeatureCollection',
 	                features: [data, trail]

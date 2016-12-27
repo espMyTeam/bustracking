@@ -99,6 +99,11 @@ window.onload = function(){
 				}else if(data.allee.near_bus){
 
 					res.allee = data.allee;
+
+					trail.geometry.coordinates = [lng_test, lat_test];
+					lng_test += 0.00001;
+					lat_test += 0.00001;
+
 					trail.geometry.coordinates = [data.allee.near_bus.position.longitude, data.allee.near_bus.position.latitude];
 					getAddresse(data.allee.near_bus.position.latitude, data.allee.near_bus.position.longitude, 18);
 					bus_marker_allee = ajout_marker(data.allee.near_bus.position.latitude, data.allee.near_bus.position.longitude, "label", busIcon_allee);
@@ -127,9 +132,7 @@ window.onload = function(){
 					
 				}
 
-				//trail.geometry.coordinates = [lng_test, lat_test];
-				//lng_test += 0.00001;
-				//lat_test += 0.00001;
+				
 
 		        val_zoom = map.getZoom();
 
