@@ -4,7 +4,7 @@ var lng_test = -17.467423;
 
 window.onload = function(){
 	var val_zoom = 15;
-	var bus_marker_retour;
+	var bus_marker_retour, bus_marker_allee, all_bus_marker_allee, all_bus_marker_retour;
 	var busIcon = L.icon.pulse({iconSize:[20,20],color:'blue'});
 
 	var map = L.map('map',{
@@ -46,35 +46,60 @@ window.onload = function(){
 				async: true
 			}).then(function(data) {
 				
-				if(bus_marker_retour){
-						console.log(bus_marker_retour)
-						map.removeLayer(bus_marker_retour);
-					}
+				all_bus_marker_retour = [];
+				all_bus_marker_allee = [];
+
 				console.log(data);
+				
+				if(bus_marker_retour){
+						
+						map.removeLayer(bus_marker_retour);
+				}
+
+				if(bus_marker_allee){
+						
+						map.removeLayer(bus_marker_allee);
+				}
+
+				//console.log(data.allee.near_bus.position);
 
 				trail.geometry.coordinates = [];
 				var res = {};
 
-				if(data.allee.position && data.retour.position){
+				if(data.allee.near_bus && data.retour.near_bus){
 					res.allee = data.allee;
 					res.retour = data.retour;
-					trail.geometry.coordinates.push([data.allee.position.lng, data.allee.position.lat]);
-					trail.geometry.coordinates.push([data.retour.position.lng, data.retour.position.lat]);
+					trail.geometry.coordinates.push([data.allee.near_bus.position.longitude, data.allee.near_bus.position.latitude]);
+					trail.geometry.coordinates.push([data.retour.near_bus.position.longitude, data.retour.near_bus.position.latitude]);
 
+					getAddresse(data.allee.near_bus.position.latitude, data.allee.near_bus.position.longitude, 18);
+					bus_marker_allee = ajout_marker(data.allee.near_bus.position.latitude, data.allee.near_bus.position.longitude, "label", busIcon);
 
-				}else if(data.allee.position){
+					getAddresse(data.retour.near_bus.position.latitude, data.retour.near_bus.position.longitude, 18);
+					bus_marker_retour = ajout_marker(data.retour.near_bus.position.latitude, data.retour.near_bus.position.longitude, "label", busIcon);
+
+					
+
+				}else if(data.allee.near_bus){
+
 					res.allee = data.allee;
-					trail.geometry.coordinates = [data.allee.position.lng, data.allee.position.lat];
+					trail.geometry.coordinates = [data.allee.near_bus.position.longitude, data.allee.near_bus.position.latitude];
+					getAddresse(data.allee.near_bus.position.latitude, data.allee.near_bus.position.longitude, 18);
+					bus_marker_allee = ajout_marker(data.allee.near_bus.position.latitude, data.allee.near_bus.position.longitude, "label", busIcon);
+					
+					for (var i=0; i<data.allee.bus.length; i++) {
+						
+						var iii = ajout_marker(data.allee.bus[i].latitude, data.allee.bus[i].longitude, "label");
+						console.log(data.allee.bus[i]);
+					}
 
-
-				}else if(data.retour.position){
+				}else if(data.retour.near_bus){
 					res.retour = data.retour;
-					trail.geometry.coordinates = [data.retour.position.lng, data.retour.position.lat];
+					trail.geometry.coordinates = [data.retour.near_bus.position.longitude, data.retour.near_bus.position.latitude];
 
-					getAddresse(data.retour.position.lat, data.retour.position.lng, 18);
-
-					bus_marker_retour = ajout_marker(data.retour.position.lat, data.retour.position.lng, "label", busIcon);
-					//ajout_marker(data.retour.position.lat, data.retour.position.lng, "label");
+					getAddresse(data.retour.near_bus.position.latitude, data.retour.near_bus.position.longitude, 18);
+					bus_marker_retour = ajout_marker(data.retour.near_bus.position.latitude, data.retour.near_bus.position.longitude, "label", busIcon);
+					//ajout_marker(data.retour.near_bus.position.latitude, data.retour.near_bus.position.longitude, "label");
 					
 					
 				}

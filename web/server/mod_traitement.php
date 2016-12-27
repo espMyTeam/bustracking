@@ -181,7 +181,7 @@
 						//	$nb=0;
 
 
-						if($nb==0){ //voir si le bus a dépassé l'arret ESP ou non
+						if($nb == 0){ //voir si le bus a dépassé l'arret ESP ou non
 							if($sens_bus == "A")
 								$temp_val_bus = Controller::isBusBetween($base,$bus, 16, 17, "A");
 							else if($sens_bus == "R")
@@ -195,24 +195,28 @@
 
 						$near_arret = array(
 							"nom" => $near_arret[1],
-							"lat" => $near_arret[2],
-							"lng" => $near_arret[3],
+							"latitude" => $near_arret[2],
+							"longitude" => $near_arret[3],
 							"reste" => $nb
 						);
 					}			
 
 					$resultats = array(
-						"bus" => array(
+						"ligne" => $nom_ligne,
+						"sens" => $sens_bus,
+						"near_bus" => array(
 							"id_bus" => $id_bus,
 							"matricule" => $matricule,
-							"ligne" => $nom_ligne
+							"position" => array(
+								'latitude' => $latitude,
+								'longitude' => $longitude,
+								'altitude' => $altitude
+							),
+							"vitesse" => $vitesse,
+							"distante_restante" => $distance_restante,
+							"arrets" => $near_arret
 						),
-						"position" => array(
-							'lat' => $latitude,
-							'lng' => $longitude,
-							'reste' => $distance_restante
-						),
-						"arrets" => $near_arret
+						"bus" => Controller::retireElement($id_bus, $base->selectAllBusLigneSens($ligne, $sens, PDO::FETCH_ASSOC))
 					);
 					return $resultats;
 
@@ -482,6 +486,21 @@
 					return true;
 				else
 					return false;
+			}
+
+			//retire un element d'un tableau
+			static function retireElement($index_elem, $tab){
+				$res = array();
+				$inc = 0;
+				foreach ($tab as $key => $value) {
+					if($value['id_bus'] != $index_elem){
+						$res[$inc] = $value;
+						$inc++;
+					}
+					
+				}
+
+				return $res;
 			}
 	}
 

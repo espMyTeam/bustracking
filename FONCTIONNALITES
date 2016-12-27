@@ -12,12 +12,18 @@ allee: liberte 5 vers palais
 retour: palais vers liberte 5
 
 
+DOING
+-> afficher tous les bus
+
 DONE
--> reverse geocoding
 -> carte avec leaflet
 -> ajouter effet sur l'icone du bus
+-> recuperer tous les bus
 
 TODO
+-> reverse geocoding
+-> design
 -> affichage des informations
 -> tracer l'itinéraire
 -> transformer le serveur en API Restfull
+-> application mobile

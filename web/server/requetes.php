@@ -126,7 +126,7 @@
 		}
 
 		/* selectionner un bus */
-		function selectBus($id_bus, $methode=PDO::FETCH_NUM){
+		function selectBus($id_bus, $methode=PDO::FETCH_NUM){ 
 			$req = "SELECT * FROM bus WHERE id_bus=:id_bus";
 			$array_params = array(
 				"id_bus" => $id_bus
@@ -134,14 +134,14 @@
 			return $this->select($req, $array_params, $methode);
 		}
 
-		function selectAllBusLigneSens($nom_ligne, $sens){
+		function selectAllBusLigneSens($nom_ligne, $sens, $methode=PDO::FETCH_NUM){
 			$req = "SELECT bus.id_bus,matricule_bus,nom_ligne,latitude,longitude,altitude,vitesse,ladate,heure,sens_bus,toterminus FROM bus,positionBus WHERE nom_ligne=:nom_ligne AND positionBus.id_positionBus=bus.position_courant AND bus.sens_bus=:sens";
 				
 			$array_params = array(
 				":nom_ligne" => $nom_ligne,
 				":sens" => $sens
 			);
-			return $this->select($req, $array_params);
+			return $this->select($req, $array_params, $methode);
 		}
 
 		/* selectionner le bus grace à son matricule */

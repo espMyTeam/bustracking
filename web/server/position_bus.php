@@ -4,7 +4,6 @@
 	// 	header('Access-Control-Allow-Credentials: true');
 	// 	header('Access-Control-Allow-Methods: REQUEST, GET, POST');
 
-//$_POST['ligne']="10";
 	if(isset($_GET['ligne'])){
 	$ligne = "10";	
 		
