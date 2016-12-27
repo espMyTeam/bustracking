@@ -39,7 +39,7 @@ window.onload = function(){
 			
 
 			L.Realtime.reqwest({
-				url: '../server/position_bus.php',
+				url: 'server/position_bus.php',
 				method: "get",
 				crossOrigin: true,
 				type: 'json',

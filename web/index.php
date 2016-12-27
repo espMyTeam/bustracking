@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Bus tracking</title>
+		<title>NextBus-ESP</title>
 
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="author" value="abdoulaye KAMA">
@@ -20,6 +20,8 @@
 		<link rel="stylesheet" type="text/css" href="css/style.css" media="all" />
 		<link rel="stylesheet" type="text/css" href="leaflet/leaflet.css" media="all" />
 		<link rel="stylesheet" type="text/css" href="font-awesome/css/font-awesome.css" media="all" />
+		<link rel="stylesheet" type="text/css" href="css/pulse.css" media="all" />
+		
 		
 		
 	</head>
@@ -28,7 +30,6 @@
 	
 	<body>
 	
-
 		<header>
 
 			<!-- menu -->
@@ -234,6 +235,7 @@
 		<script  type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
 		<script type="text/javascript" src="leaflet/leaflet-src.js"></script>
     	<script type="text/javascript" src="leaflet/leaflet-realtime.js"></script>
-    	<script type="text/javascript" src="mapping.js"></script>
+    	
+    	<script type="text/javascript" src="js/mapping.js"></script>
 	</body>
 </html>
