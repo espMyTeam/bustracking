@@ -1,7 +1,7 @@
 -> carte
 -> itinéraire
 -> affichage informations
--> augmenter la fréquence de raffraichissement : 1s (web) et 30 s (carte arduino)
+-> augmenter la fréquence de raffraichissement : 5s
 -> tracer l'itinéraire
 -> design
 -> application mobile
@@ -10,3 +10,14 @@
 
 allee: liberte 5 vers palais 
 retour: palais vers liberte 5
+
+
+DONE
+-> reverse geocoding
+-> carte avec leaflet
+-> ajouter effet sur l'icone du bus
+
+TODO
+-> affichage des informations
+-> tracer l'itinéraire
+-> transformer le serveur en API Restfull

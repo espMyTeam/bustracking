@@ -2,15 +2,17 @@ var UPDATE_TIME = 5;
 var lat_test = 14.681325;
 var lng_test = -17.467423;
 
+
 window.onload = function(){
 	var val_zoom = 15;
-	var bus_marker_retour;
-	var busIcon = L.icon.pulse({iconSize:[20,20],color:'blue'});
+	var busIcon = L.icon.pulse({iconSize:[20,20],color:'red'});
 
 	var map = L.map('map',{
 		center: [14.681293, -17.467403],
     	zoom: val_zoom
 	});
+
+	var bus_marker_retour;
     
     var trail = {
         type: 'Feature',
@@ -23,6 +25,7 @@ window.onload = function(){
 
 	//ajouter le marqueur ESP
 	ajout_marker(14.681335,-17.466754, "Ecole Supérieure Polytechnique");
+	
 	//geolocalise();
 
 	var realtime = L.realtime(
@@ -45,7 +48,6 @@ window.onload = function(){
 				data: {'ligne': "10"},
 				async: true
 			}).then(function(data) {
-				
 				if(bus_marker_retour){
 						console.log(bus_marker_retour)
 						map.removeLayer(bus_marker_retour);
@@ -60,12 +62,16 @@ window.onload = function(){
 					res.retour = data.retour;
 					trail.geometry.coordinates.push([data.allee.position.lng, data.allee.position.lat]);
 					trail.geometry.coordinates.push([data.retour.position.lng, data.retour.position.lat]);
+					getAddresse(data.allee.position.lat, data.allee.position.lng, 18);
+					getAddresse(data.retour.position.lat, data.retour.position.lng, 18);
 
+					ajout_marker(data.allee.position.lat, data.allee.position.lng, "label", busIcon);
 
 				}else if(data.allee.position){
 					res.allee = data.allee;
 					trail.geometry.coordinates = [data.allee.position.lng, data.allee.position.lat];
-
+					getAddresse(data.allee.position.lat, data.allee.position.lng, 18);
+					ajout_marker(data.allee.position.lat, data.allee.position.lng, "label", busIcon);
 
 				}else if(data.retour.position){
 					res.retour = data.retour;
@@ -73,9 +79,8 @@ window.onload = function(){
 
 					getAddresse(data.retour.position.lat, data.retour.position.lng, 18);
 
-					bus_marker_retour = ajout_marker(data.retour.position.lat, data.retour.position.lng, "label", busIcon);
-					//ajout_marker(data.retour.position.lat, data.retour.position.lng, "label");
-					
+					//bus_marker_retour = ajout_marker(data.retour.position.lat, data.retour.position.lng, "label", busIcon);
+					ajout_marker(data.retour.position.lat, data.retour.position.lng, "label");
 					
 				}
 
@@ -111,8 +116,10 @@ window.onload = function(){
 	function ajout_marker(lat, lng, libelle, icone) {
 		if(icone)
 			var marker = L.marker([parseFloat(lat).toFixed(6), parseFloat(lng).toFixed(6)], {icon: icone}).addTo(map);
-		else
+		else{
+			
 			var marker = L.marker([parseFloat(lat).toFixed(6), parseFloat(lng).toFixed(6)]).addTo(map);
+		}
 	    marker.bindPopup(libelle+"<br/>latitude:"+lat+", longitude:"+lng)
 	        .on('mouseover', function(e){ marker.openPopup(); })
 	        .on('mouseout', function(e){ marker.closePopup(); });
@@ -132,8 +139,9 @@ window.onload = function(){
 
 
 
-} //fin window.onload
 
+
+} //fin window.onload
 
 /*
 	geolocaliser le visteur
@@ -192,7 +200,7 @@ L.Icon.Pulse = L.DivIcon.extend({
         options: {
             className: '',
             iconSize: [12,12],
-            color: 'red',
+            color: 'blue',
             animate: true,
             heartbeat: 1,
         },
