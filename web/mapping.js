@@ -29,20 +29,22 @@ window.onload=function(){
 	visitor_icon = create_icone("images/marker_visitor.png", "images/marker_visitor_shadow.png");
 
 	map = L.map('map',{
-			center: [14.681293, -17.467403],
-    		zoom: val_zoom
-			}),
-    trail = {
-			        type: 'Feature',
-			        properties: {
-			            id: 1
-			        },
-			        geometry: {
-			            type: 'Point',
-			            coordinates: []
-			        }
-	},
-	realtime = L.realtime(function(success, error) {
+		center: [14.681293, -17.467403],
+    	zoom: val_zoom
+	});
+    
+    var trail = {
+        type: 'Feature',
+        properties: {
+            id: 1
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: []
+        }
+	};
+
+	var realtime = L.realtime(function(success, error) {
     	var data;
     	
     	if(ligne == undefined || ligne.value == undefined || ligne.value == null){
@@ -175,11 +177,14 @@ window.onload=function(){
 	                features: [data, trail]
 	            });
 	        }).catch(error);
-		}, {
-			interval: 10 * 1000
-	}).addTo(map);
+		},
+		{
+			interval: 2 * 1000,
+			start: true
+	}).addTo(map); //fin L.realtime();
+
 			    
-}
+} // fin windows.onload
 
 function ajout_marker(lat, lng, libelle) {
 	var marker = L.marker([parseFloat(lat).toFixed(6), parseFloat(lng).toFixed(6)]).addTo(map);
@@ -280,7 +285,7 @@ function ajout_arretss(ligne){
 						longitude_arret
 						*/
 
-						console.log(arrets);
+						//console.log(arrets);
 			          
 			           	for(var i=0; i<arrets.length; i++){
 			           		var arret = arrets[i];

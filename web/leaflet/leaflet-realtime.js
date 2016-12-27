@@ -225,7 +225,7 @@
         http.send(data)
       }, 200)
     } else {
-      console.log(data)
+      //console.log(data)
       http.send(data)
     }
     return http
@@ -692,7 +692,7 @@ L.Realtime = L.GeoJSON.extend({
     },    
 
     update: function(geojson) {
-        console.log(geojson);
+        //console.log(geojson);
         var responseHandler,
             errorHandler;
 

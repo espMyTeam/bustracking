@@ -8,3 +8,7 @@ function fill_map(handle){
 function select_bus(){
 	//selectionner l'ensemble des bus
 }
+
+function reverse_geocoding(latitude, longitude){
+	
+}
