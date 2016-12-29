@@ -11,19 +11,67 @@
 allee: liberte 5 vers palais 
 retour: palais vers liberte 5
 
+------------message:
+{
+	ligne 						//nom de la ligne
+	sens 						//le sens
+	near_bus : { 				//le bus le plus proche de l'arret ESP dans le sens choisi
+		id_bus, 
+		matricule,
+		position : {
+			latitude,
+			longitude,
+			altitude
+		},
+		vitesse, 				//vitesse du bus
+		distante_restante, 		//distance entre le bus et l'arret ESP
+		next_arret : { 			//le prochain arret
+			id_arret,
+			nom,
+			latitude,
+			longitude,
+			nb_arrets_restants	//nombre d'arrets restants
+		}
+	},
+	bus, 						/* les autres bus sur la route */
+	arrets, 					//les restants pour atteindre l'arret ESP
+	message, 					//message à afficher
+	arret_esp					//Arret ESP
+}
+
+--------- NEXT-BUS: PARTIE WEB ---------------------
 
 DOING
--> afficher tous les bus
+-> design: texte a afficher
+-> alerte
+-> integrer dans le serveur les messages
+-> utiliser gprs pour 
 
 DONE
 -> carte avec leaflet
 -> ajouter effet sur l'icone du bus
 -> recuperer tous les bus
+-> reverse geocoding
+-> afficher tous les bus
+-> changement arret de référence à arret 16 (allée avant ESP vers palais)
 
 TODO
--> reverse geocoding
--> design
 -> affichage des informations
 -> tracer l'itinéraire
 -> transformer le serveur en API Restfull
 -> application mobile
+
+--------------- SNAP-INFO: PARTIE MOBILE -----------------------
+TODO
+-> interface web
+-> serveur de traitement
+-> mobile
+-> photo
+-> récupération de la position
+-> envoie de la photo
+
+DONE
+-> 
+
+DOING
+-> 

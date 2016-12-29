@@ -103,13 +103,20 @@
 		}
 
 		static function selectNearBusTerminus($base, $ligne, $sens){
+				//les indicateurs pour la formulation du message
+				$flag_nb_arrets_restants = -1;
+				$flag_next_bus = false;
+				$flag_un_autre_bus_arrive = false;
+
 				//selectionner le bus le plus proche du terminus
 				$bus = Controller::getNearBus($base, 1, $sens);
 				
 
 				if(empty($bus)){
-					return [];
+					return array("message" => Controller::formuleMessage($flag_nb_arrets_restants, $flag_next_bus, $flag_un_autre_bus_arrive));
 				}else{
+
+					$flag_next_bus = true;
 
 					$i=0;
 					$id_bus = $bus[0];
@@ -183,7 +190,7 @@
 
 						if($nb == 0){ //voir si le bus a dépassé l'arret ESP ou non
 							if($sens_bus == "A")
-								$temp_val_bus = Controller::isBusBetween($base,$bus, 16, 17, "A");
+								$temp_val_bus = Controller::isBusBetween($base,$bus, 15, 16, "A");
 							else if($sens_bus == "R")
 								$temp_val_bus = Controller::isBusBetween($base,$bus, 10, 11, "R");
 
@@ -193,31 +200,41 @@
 
 						}
 
+
 						$near_arret = array(
+							"id_arret" => $near_arret[0],
 							"nom" => $near_arret[1],
 							"latitude" => $near_arret[2],
 							"longitude" => $near_arret[3],
-							"reste" => $nb
+							"nb_arrets_restants" => $nb //nombre d'arrets restants
 						);
+
+						$flag_nb_arrets_restants = $nb;
 					}			
+					$autres_bus = $base->selectAllBusLigneSens($ligne, $sens);
+					$flag_un_autre_bus_arrive = isset($autres_bus[1])?true:false;
 
 					$resultats = array(
-						"ligne" => $nom_ligne,
-						"sens" => $sens_bus,
-						"near_bus" => array(
-							"id_bus" => $id_bus,
+						"ligne" => $nom_ligne, //nom de la ligne
+						"sens" => $sens_bus, //le sens
+						"near_bus" => array( //le bus le plus proche de l'arret ESP dans le sens choisi
+							"id_bus" => $id_bus, 
 							"matricule" => $matricule,
 							"position" => array(
 								'latitude' => $latitude,
 								'longitude' => $longitude,
 								'altitude' => $altitude
 							),
-							"vitesse" => $vitesse,
-							"distante_restante" => $distance_restante,
-							"arrets" => $near_arret
+							"vitesse" => $vitesse, //vitesse du bus
+							"distante_restante" => $distance_restante, //distance entre le bus et l'arret ESP
+							"next_arret" => $near_arret //le prochain arret
 						),
-						"bus" => Controller::retireElement($id_bus, $base->selectAllBusLigneSens($ligne, $sens, PDO::FETCH_ASSOC))
+						"bus" => Controller::retireElement(0,$id_bus, $autres_bus), /* les autres bus sur la route */
+						"arrets" => Controller::retireElement(0,$near_arret['id_arret'],$all_arrets), //les restants pour atteindre l'arret ESP,
+						"arret_esp" => $base->selectArretEsp(1, $sens, PDO::FETCH_ASSOC), //arret esp
+						"message" => Controller::formuleMessage($flag_nb_arrets_restants, $flag_next_bus, $flag_un_autre_bus_arrive)
 					);
+					
 					return $resultats;
 
 				}
@@ -476,31 +493,74 @@
 			}
 
 
+			/*
+				Savoir si le bus est entre deux arrets donnés
+			*/
 			static function isBusBetween($base,$bus, $id_arret1, $id_arret2, $sens, $id_ligne=1){
 				$arret1 = $base->selectArretLigne($id_ligne, $id_arret1, $sens)[0];
 				$arret1 = $base->selectArretLigne($id_ligne, $id_arret2, $sens)[0];
+
+				//distance du bus par rapport aux deux arrets
 				$d1 = GPS::distance(doubleval($bus[3]), doubleval($bus[4]), doubleval($arret1[1]), doubleval($arret1[2]));
 				$d2 = GPS::distance(doubleval($bus[3]), doubleval($bus[4]), doubleval($arret2[1]), doubleval($arret2[2]));
+
+				//distance entre les deux arrets
 				$d12 = GPS::distance(doubleval($arret1[1]), doubleval($arret1[2]), doubleval($arret2[1]), doubleval($arret2[2]));
+
 				if($d1 <= $d12 && $d2 <= $d12)
 					return true;
 				else
 					return false;
 			}
 
-			//retire un element d'un tableau
-			static function retireElement($index_elem, $tab){
+			/*
+				retire un element (tableau) d'un tableau: index (position dans l'element) et sa valeur doivent suffir pour identifiant l'element
+			*/
+			static function retireElement($index_elem, $val_elem, $tab){
 				$res = array();
 				$inc = 0;
 				foreach ($tab as $key => $value) {
-					if($value['id_bus'] != $index_elem){
-						$res[$inc] = $value;
-						$inc++;
+
+					if(isset($value[$index_elem])){
+						if($value[$index_elem] != $val_elem){
+							$res[$inc] = $value;
+							$inc++;
+						}
 					}
 					
 				}
 
 				return $res;
+			}
+
+
+
+			/* 
+				formulation du message
+			*/
+
+			static function formuleMessage($nb_arrets_restants, $next_bus=true, $un_autre_bus_arrive=false){
+				$message = "";
+				if($next_bus){
+					if($nb_arrets_restants == 0){
+						$message = "Le bus est presque arrivé à l'arrêt à l'ESP...";
+					}elseif ($nb_arrets_restants>0 && $nb_arrets_restants<=2) {
+						$message = "Le bus est à l'approche!!! Il ne reste que $nb_arrets_restants arrêts avant l'arrêt de l'ESP...";
+					}elseif ($nb_arrets_restants>2) {
+						$message = "Le bus arrive dans $nb_arrets_restants arrêts à l'arrêt l'ESP...";
+					}else{
+						$message = "Le bus a dépassé l'arrêt ESP.";
+						if($un_autre_bus_arrive){
+							$message += "Attendez le prochain bus...";
+						}else{
+							$message += " Malheureusement il n'y a plus de bus ayant déjà pris le départ...";
+						}
+					}
+				}else{
+					$message = "Il n'y a de bus a l'approche!!!Veuillez prendre un bus autre d'une autre ligne ou un autre moyen de transport...";
+				}
+
+				return $message;
 			}
 	}
 

@@ -110,9 +110,9 @@
 		}
 
 		/* selectionner l'arret ESP correspondant au sens donne en parametre */
-		function selectArretEsp($id_ligne, $sens){
+		function selectArretEsp($id_ligne, $sens, $methode=PDO::FETCH_NUM){
 			if($sens == "A")
-				$num = 17;
+				$num = 16;
 			else
 				$num = 11;
 
@@ -122,7 +122,8 @@
 				":sens" => $sens,
 				":num" => $num
 			);
-			return $this->select($req, $array_params);
+			
+			return $this->select($req, $array_params, $methode);
 		}
 
 		/* selectionner un bus */
@@ -191,21 +192,24 @@
 			return $this->select($req, $array_params);
 		}
 
+		/*
+			selectionner les arrets restants
+		*/
 		function selectArretsLigneRestant($id_ligne, $sens, $num_ref){
 			if($sens == "A"){
-				$req = "SELECT arret.id_arret,arret.nom_arret,arret.latitude_arret,arret.longitude_arret,arretLigne.num_arretDansLigne,arretLigne.distance_tonext FROM arret, arretLigne WHERE arret.id_arret=arretLigne.id_arret AND id_ligne=:id_ligne AND sens='A' AND num_arretDansLigne>=:num_ref AND num_arretDansLigne<17";
-				$array_params = array(
-					"id_ligne" => $id_ligne,
-					":num_ref" => $num_ref
-				);
+				$arret_esp = 16;
 			}else{
-				$req = "SELECT arret.id_arret,arret.nom_arret,arret.latitude_arret,arret.longitude_arret,arretLigne.num_arretDansLigne,arretLigne.distance_tonext FROM arret, arretLigne WHERE arret.id_arret=arretLigne.id_arret AND id_ligne=:id_ligne AND sens='R' AND num_arretDansLigne>=:num_ref AND num_arretDansLigne<11";
-				$array_params = array(
-					":id_ligne" => $id_ligne,
-					":num_ref" => $num_ref
-				);
+				$arret_esp = 11;
 			}
-			
+
+			$req = "SELECT arret.id_arret,arret.nom_arret,arret.latitude_arret,arret.longitude_arret,arretLigne.num_arretDansLigne,arretLigne.distance_tonext FROM arret, arretLigne WHERE arret.id_arret=arretLigne.id_arret AND id_ligne=:id_ligne AND sens=:sens AND num_arretDansLigne>=:num_ref AND num_arretDansLigne<:arret_esp";
+			$array_params = array(
+				":id_ligne" => $id_ligne,
+				":num_ref" => $num_ref,
+				":arret_esp" => $arret_esp,
+				":sens" => $sens
+			);
+		
 			return $this->select($req, $array_params);
 		}
 

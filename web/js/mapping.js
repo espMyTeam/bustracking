@@ -165,8 +165,8 @@ window.onload = function(){
 		else
 			var marker = L.marker([parseFloat(lat).toFixed(6), parseFloat(lng).toFixed(6)]).addTo(map);
 		
-		var a = getAddresse(lat, lng, val_zoom, marker);
-		console.log(a);
+		//var a = getAddresse(lat, lng, val_zoom, marker);
+		//console.log(a);
 
 	    marker.bindPopup(libelle+"<br/>latitude:"+lat+", longitude:"+lng)
 	        .on('mouseover', function(e){ marker.openPopup(); })
