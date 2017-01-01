@@ -1,18 +1,14 @@
-#include <SPI.h>
-#include <Ethernet.h>
 #include <TinyGPS++.h>
 #include <SoftwareSerial.h>
-
-
-// **********************parametres du shield ethernet
-IPAddress ip(192,168,1,200);
-EthernetClient client;
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-char server [] = "bustracking-kamsapp.rhcloud.com";
 
 // **********************parametres du shield gps
 TinyGPSPlus gps; 
 SoftwareSerial SoftSerial(2, 3);
+
+//******************** gprs
+SoftwareSerial gprs(6, 7);
+
+char server [] = "bustracking-kamsapp.rhcloud.com";
 int onModulePin=4;
 
 //***********************configuration du bus
@@ -51,32 +47,29 @@ String ligne = "10"; //***
 char sens [] = "arret16";
 
 
+void setup()
+{
+    //le port serie
+    Serial.begin(9600);
+    
+    //initialiser le gprs
+    initGPRS();
+    wait(1000);
 
-
-void setup(){
-
-  //initialiser la voie série
-  Serial.begin(9600);
-
-  //initialiser le shield ethernet
-  initEthernet();
-  wait(1000);
-
-  //initialiser le shield gps
-  initGPS();
-  wait(1000);
+    //initialiser le shield gps
+    initGPS();
+    wait(1000);
   
-
-  //testes
-  //sendEthernetData("bus 10111dk ligne 10 14.681384 -17.466691 16.4000 2.037200 2 11502200 260416 783893435");
-  
+    delay(500);
+    
 }
 
-void loop(){
-   if(SoftSerial.available() > 0)
+void loop()
+{
+  if(SoftSerial.available() > 0)
       if(gps.encode(SoftSerial.read())){
         gps_state=1; 
-        //Serial.println("reception donnees satellite...");
+        Serial.println("reception donnees satellite...");
       }
       
   if(((unsigned long)(millis() - timer >= dt) || depart==1)&&(gps_state==1)){
@@ -85,16 +78,17 @@ void loop(){
     }
 }
 
-void initEthernet(){
-  Serial.println("Intialisation du shield ethernet");
-  //initialiser avec DHCP ou avec un ip fixe sinon
-  if(!Ethernet.begin(mac)){
-    Ethernet.begin(mac, ip);
-    Serial.print("parametrage avec ip fixe: ");
-    Serial.println(ip);
-  }else{
-    Serial.println("parametrage avec dhcp");
-  }
+
+void initGPRS(){
+  Serial.println("Intialisation du shield GSM/GPRS");
+  gprs.begin(9600);
+  pinMode(9, OUTPUT);
+  digitalWrite(9,HIGH);
+  wait(1000);
+  digitalWrite(9,LOW);
+  wait(2000);
+  sendGPRSData("Demarrage gprs");
+  
 }
 
 void initGPS(){
@@ -104,91 +98,67 @@ void initGPS(){
   digitalWrite(onModulePin,HIGH); 
   wait(100);
   digitalWrite(onModulePin,LOW);
-  sendEthernetData("Synchronisation du bus");
+  sendGPRSData("Synchronisation du bus");
 }
 
 
+void sendGPRSData(String data)
+{
+    Serial.println(data);
+    gprs.println("AT+CSQ");
+    delay(100);
 
-void sendEthernetData(String donnees){
+    ShowSerialData();// this code is to show the data from gprs shield, in order to easily see the process of how the gprs shield submit a http request, and the following is for this purpose too.
 
-  //formatter les donnees
-  donnees +=" 783893435";
-  donnees.replace(" ", "%20");
-  
-  //se connecter
-  client.connect(server, 80);
-  Serial.println("Connexion...");
+    gprs.println("AT+CGATT?");
+    delay(100);
 
-  //envoyer les donnees
-  Serial.println("envoi des donnees:\n<<");
-  Serial.println(donnees);
-  Serial.println(">>");
-  
-  client.print("GET /remote_request.php?donnees=");
-  client.print(donnees);
-  client.print("&num=783893435");
-  client.println(" HTTP/1.1");
-  client.print("Host: ");
-  client.println(server);
-  client.println("Connection: keep-alive");
-  client.println();
+    ShowSerialData();
 
-   //se deconnecter
-  Serial.println("Deconnexion...");
-  client.stop();
+    gprs.println("AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"");//setting the SAPBR, the connection type is using gprs
+    delay(1000); 
+
+    ShowSerialData();
+
+    gprs.println("AT+SAPBR=3,1,\"APN\",\"internet\"");//setting the APN, the second need you fill in your local apn server
+    delay(4000);
+
+    ShowSerialData();
+
+    gprs.println("AT+SAPBR=1,1");//setting the SAPBR, for detail you can refer to the AT command mamual
+    delay(2000);
+
+    ShowSerialData();
+
+    gprs.println("AT+HTTPINIT"); //init the HTTP request
+
+    delay(2000);
+    ShowSerialData();
+
+    gprs.print("AT+HTTPPARA=\"URL\",\"bustracking-kamsapp.rhcloud.com/remote_request.php?donnees=" + data + " 783893435&num=783893435\"");
+    delay(1000);
+
+    ShowSerialData();
+
+    gprs.println("AT+HTTPACTION=0");//submit the request
+    delay(10000);
+
+    ShowSerialData();
+
+    gprs.println("AT+HTTPREAD");// read the data from the website you access
+    delay(300);
+
+    ShowSerialData();
+
+    gprs.println("");
+    delay(100);
 }
 
-/* envoie des corrdonnees gps */
-void sendGpsEthernetData(){
-  
-  //se connecter
-  client.connect(server, 80);
-  Serial.println("Connexion...");
 
-  //envoyer les donnees
-  Serial.println("envoi des donnees:\n<<");
- /* Serial.println(donnees);*/
- 
-  
-  client.print("GET /remote_request.php?donnees=");
-
-  client.print("bus"); //matricule
-  client.print("%20");
-  client.print(matricule_bus); //matricule
-  client.print("%20");
-  client.print("ligne");
-  client.print("%20");
-  client.print(ligne); //ligne
-  client.print("%20");
-  client.print(last_lat, 6); //Recuperation et ecriture de la latitude actuelle sur le SMS
-  client.print("%20");
-  client.print(last_lng, 6); //Recuperation et ecriture de la longitude actuelle sur le SMS
-  client.print("%20");
-  client.print(last_alt, 4); 
-  client.print("%20");
-  client.print(gps.speed.kmph(), 6); //Recuperation et ecriture de la vitesse actuelle sur le SMS
-  client.print("%20");
-  client.print("2");
-  client.print("%20");
-  client.print(gps.time.value()); //Recuperation et ecriture de l'heure actuelle sur le SMS
-  client.print("%20");
-  client.print(gps.date.value()); //Recuperation et ecriture de la date actuelle sur le SMS
-  client.print("%20");
-  client.print("783893435");
-
-  Serial.println(">>");
-  
-  client.print("&num=783893435");
-  client.println(" HTTP/1.1");
-  client.print("Host: ");
-  client.println(server);
-  client.println("Connection: keep-alive");
-  client.println();
-  
-
-   //se deconnecter
-  Serial.println("Deconnexion...");
-  client.stop();
+void ShowSerialData()
+{
+    while(gprs.available()!=0)
+    Serial.write(gprs.read());
 }
 
 static void wait(unsigned long ms){
@@ -224,13 +194,13 @@ void tracking(){
       
       
       if(distance >= distance_seuille && depart == 0){
-        sendGpsEthernetData();
+        //sendGpsGPRSData();
         distance = 0;
       }
 
       if(depart == 1){ //on envoie si c'est le départ
         Serial.println("premiere envoie des cordonneers gps");
-        sendGpsEthernetData();
+       // sendGpsGPRSData();
         depart = 0; 
       }
     
