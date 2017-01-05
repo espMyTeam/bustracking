@@ -44,34 +44,36 @@ retour: palais vers liberte 5
 DOING
 -> design: texte a afficher
 -> alerte
--> integrer dans le serveur les messages
--> utiliser gprs pour 
+-> utiliser gprs
+-> geolocaliser le client
+-> proposer au client l'arret le proche
+-> transformer le serveur en API Restfull
+-> application mobile pour recevoir la position du bus
 
 DONE
 -> carte avec leaflet
 -> ajouter effet sur l'icone du bus
 -> recuperer tous les bus
--> reverse geocoding
+-> geocoding/reverse geocoding
 -> afficher tous les bus
 -> changement arret de référence à arret 16 (allée avant ESP vers palais)
+-> integrer dans le serveur les messages
 
 TODO
 -> affichage des informations
 -> tracer l'itinéraire
--> transformer le serveur en API Restfull
 -> application mobile
-
+-> Design
+-> 
 --------------- SNAP-INFO: PARTIE MOBILE -----------------------
 TODO
--> interface web
 -> serveur de traitement
 -> mobile
--> photo
--> récupération de la position
--> envoie de la photo
 
 DONE
--> 
+-> interface web
+-> photo
 
 DOING
--> 
+-> récupération de la position
+-> envoie de la photo

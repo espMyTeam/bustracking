@@ -1,12 +1,18 @@
 #include <TinyGPS++.h>
+#include <GPRS_Shield_Arduino.h>
 #include <SoftwareSerial.h>
+#include <Wire.h>
+#include <AltSoftSerial.h>
 
 // **********************parametres du shield gps
 TinyGPSPlus gps; 
-SoftwareSerial SoftSerial(2, 3);
+AltSoftSerial SoftSerial;
 
 //******************** gprs
-SoftwareSerial gprs(6, 7);
+#define PIN_TX    6
+#define PIN_RX    7
+#define BAUDRATE  9600
+GPRS gprs(PIN_TX, PIN_RX, BAUDRATE);
 
 char server [] = "bustracking-kamsapp.rhcloud.com";
 int onModulePin=4;
@@ -47,6 +53,7 @@ String ligne = "10"; //***
 char sens [] = "arret16";
 
 
+
 void setup()
 {
     //le port serie
@@ -60,34 +67,48 @@ void setup()
     initGPS();
     wait(1000);
   
-    delay(500);
+   // delay(500);
     
 }
 
 void loop()
 {
-  if(SoftSerial.available() > 0)
-      if(gps.encode(SoftSerial.read())){
-        gps_state=1; 
-        //Serial.println("reception donnees satellite...");
-      }
-      
-  if(((unsigned long)(millis() - timer >= dt) || depart==1)&&(gps_state==1)){
-      tracking();
-      timer = millis();
-    }
+//  if(SoftSerial.available() > 0)
+//      if(gps.encode(SoftSerial.read())){
+//        gps_state=1; 
+//        //Serial.println("reception donnees satellite...");
+//      }
+//      
+//  if(((unsigned long)(millis() - timer >= dt) || depart==1)&&(gps_state==1)){
+//      tracking();
+//      timer = millis();
+//    }
 }
 
 
 void initGPRS(){
   Serial.println("Intialisation du shield GSM/GPRS");
-  gprs.begin(9600);
-  pinMode(9, OUTPUT);
-  digitalWrite(9,LOW);
-  wait(1000);
-  digitalWrite(9,HIGH);
-  wait(2000);
-  sendGPRSData("Demarrage gprs");
+//  gprs.begin(9600);
+  while(!gprs.init()) {
+      delay(1000);
+      Serial.print("Erreur d'initialisation du modem GSM\r\n");
+  }
+  delay(3000);    
+  // attempt DHCP
+  while(!gprs.join(F("internet"))) {
+      Serial.println("Impossible de se connecter au reseau GPRS");
+      delay(2000);
+  }
+
+  // successful DHCP
+  Serial.print("Connexion au GPRS reussie. \nAdresse IP:");
+  Serial.println(gprs.getIPAddress());
+
+  float lat,lng;
+  gprs.getLocation(F("internet"), &lat, &lng);
+  Serial.println(lat);
+  Serial.println(lng);
+  sendGPRSData("syncrhonisation du bus");
   
 }
 
@@ -104,62 +125,34 @@ void initGPS(){
 
 void sendGPRSData(String data)
 {
-    Serial.println(data);
-    gprs.println("AT+CSQ");
-    delay(100);
+    char http_cmd[] = "GET /remote_request.php?donnees=data&num=773675372 HTTP/1.1\r\n\r\n";
+    char buffer[512];
+    if(!gprs.connect(TCP,"bustracking-kamsapp.rhcloud.com", 80)) {
+      Serial.println("erreur de connexion");
+    }else{
+        Serial.println("connexion reussie");
+    }
 
-    ShowSerialData();// this code is to show the data from gprs shield, in order to easily see the process of how the gprs shield submit a http request, and the following is for this purpose too.
-
-    gprs.println("AT+CGATT?");
-    delay(100);
-
-    ShowSerialData();
-
-    gprs.println("AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"");//setting the SAPBR, the connection type is using gprs
-    delay(1000); 
-
-    ShowSerialData();
-
-    gprs.println("AT+SAPBR=3,1,\"APN\",\"internet\"");//setting the APN, the second need you fill in your local apn server
-    delay(4000);
-
-    ShowSerialData();
-
-    gprs.println("AT+SAPBR=1,1");//setting the SAPBR, for detail you can refer to the AT command mamual
-    delay(2000);
-
-    ShowSerialData();
-
-    gprs.println("AT+HTTPINIT"); //init the HTTP request
-
-    delay(2000);
-    ShowSerialData();
-
-    gprs.print("AT+HTTPPARA=\"URL\",\"bustracking-kamsapp.rhcloud.com/remote_request.php?donnees=" + data + " 783893435&num=783893435\"");
-    delay(1000);
-
-    ShowSerialData();
-
-    gprs.println("AT+HTTPACTION=0");//submit the request
-    delay(10000);
-
-    ShowSerialData();
-
-    gprs.println("AT+HTTPREAD");// read the data from the website you access
-    delay(300);
-
-    ShowSerialData();
-
-    gprs.println("");
-    delay(100);
+    Serial.println("attente d'envoie...");
+    gprs.send(http_cmd, sizeof(http_cmd)-1);
+    while (true) {
+        int ret = gprs.recv(buffer, sizeof(buffer)-1);
+        if (ret <= 0){
+            Serial.println("envoie termine...");
+            break; 
+        }
+        buffer[ret] = '\0';
+        Serial.print("Recv: ");
+        Serial.print(ret);
+        Serial.print(" bytes: ");
+        Serial.println(buffer);
+    }
+    gprs.close();
+    gprs.disconnect();
 }
 
 
-void ShowSerialData()
-{
-    while(gprs.available()!=0)
-    Serial.write(gprs.read());
-}
+
 
 static void wait(unsigned long ms){
   unsigned long start = millis();

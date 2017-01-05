@@ -401,6 +401,9 @@
 			
 		}
 
+		/**
+		* Mettre à jour le sens du bus
+		*/
 		static function updateBusSens($base, $id_bus, $new_lat, $new_lng){
 			//selectionner le bus
 			$bus = $base->selectBus($id_bus, PDO::FETCH_ASSOC)[0];
@@ -562,6 +565,8 @@
 
 				return $message;
 			}
+
+
 	}
 
 	/***************testes***********************/
