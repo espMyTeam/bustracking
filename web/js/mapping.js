@@ -1,4 +1,4 @@
-var UPDATE_TIME = 5;
+var UPDATE_TIME = 5;//nombre de secondes pour la mise à jour
 var lat_test = 14.681325;
 var lng_test = -17.467423;
 
@@ -7,12 +7,12 @@ window.onload = function(){
 	var bus_marker_retour, bus_marker_allee,bus_marker_retour_ic, bus_marker_allee_ic, all_bus_marker_allee, all_bus_marker_retour;
 	var busIcon_allee = L.icon.pulse({iconSize:[20,20],color:'blue'});
 	var busIcon_retour = L.icon.pulse({iconSize:[20,20],color:'red'});
-
+//on centre la carte à cette position
 	var map = L.map('map',{
 		center: [14.681293, -17.467403],
     	zoom: val_zoom
 	});
-    
+
     var trail = {
         type: 'Feature',
         properties: {},
@@ -36,8 +36,8 @@ window.onload = function(){
 				val_zoom = map.getZoom();
 			});
 
-			
 
+//recuperation des positions des bus
 			L.Realtime.reqwest({
 				url: 'server/position_bus.php',
 				method: "get",
@@ -46,20 +46,20 @@ window.onload = function(){
 				data: {'ligne': "10"},
 				async: true
 			}).then(function(data) {
-				
+
 				all_bus_marker_retour = [];
 				all_bus_marker_allee = [];
 
 				console.log(data);
-
+				//pour commencer on retire les bus déjà sur place (nettoyage de la carte)
 				if(bus_marker_retour){
-						
+
 						map.removeLayer(bus_marker_retour);
 						map.removeLayer(bus_marker_retour_ic);
 				}
 
 				if(bus_marker_allee){
-						
+
 						map.removeLayer(bus_marker_allee);
 						map.removeLayer(bus_marker_allee_ic);
 				}
@@ -68,7 +68,7 @@ window.onload = function(){
 
 				trail.geometry.coordinates = [];
 				var res = {};
-
+				//si on a des bus en allé et en retour
 				if(data.allee.near_bus && data.retour.near_bus){
 					res.allee = data.allee;
 					res.retour = data.retour;
@@ -84,19 +84,19 @@ window.onload = function(){
 					bus_marker_retour_ic =ajout_marker(data.retour.near_bus.position.latitude, data.retour.near_bus.position.longitude, "label");
 
 					for (var i=0; i<data.allee.bus.length; i++) {
-						
+
 						var iii = ajout_marker(data.allee.bus[i].latitude, data.allee.bus[i].longitude, "label");
 						all_bus_marker_allee.push(iii);
 					}
 
 					for (var i=0; i<data.retour.bus.length; i++) {
-						
+
 						var iii = ajout_marker(data.retour.bus[i].latitude, data.retour.bus[i].longitude, "label");
 						all_bus_marker_retour.push(iii);
 					}
-					
 
-				}else if(data.allee.near_bus){
+
+				}else if(data.allee.near_bus){//si on a des bus seulement en allé
 
 					res.allee = data.allee;
 
@@ -108,31 +108,36 @@ window.onload = function(){
 					getAddresse(data.allee.near_bus.position.latitude, data.allee.near_bus.position.longitude, 18);
 					bus_marker_allee = ajout_marker(data.allee.near_bus.position.latitude, data.allee.near_bus.position.longitude, "label", busIcon_allee);
 					bus_marker_allee_ic = ajout_marker(data.allee.near_bus.position.latitude, data.allee.near_bus.position.longitude, "label");
-					
+
+					//fonction d'alerte pour approche de bus
+					alertApprocheBus(data.allee,bus_marker_allee);
+
+					//on place tous les bus
 					for (var i=0; i<data.allee.bus.length; i++) {
-						
+
 						var iii = ajout_marker(data.allee.bus[i].latitude, data.allee.bus[i].longitude, "label");
 						all_bus_marker_allee.push(iii);
 					}
 
 
-				}else if(data.retour.near_bus){
+				}else if(data.retour.near_bus){//si on a des bus seulement en retour
 					res.retour = data.retour;
 					trail.geometry.coordinates = [data.retour.near_bus.position.longitude, data.retour.near_bus.position.latitude];
 
 					getAddresse(data.retour.near_bus.position.latitude, data.retour.near_bus.position.longitude, 18);
 					bus_marker_retour = ajout_marker(data.retour.near_bus.position.latitude, data.retour.near_bus.position.longitude, "label", busIcon_retour);
 					bus_marker_retour_ic =ajout_marker(data.retour.near_bus.position.latitude, data.retour.near_bus.position.longitude, "label");
-					
+
+					bus_marker_allee.bindPopup(data.retour.near_bus.next_arret.nb_arrets_restants+' <strong>nb arrets</strong>')
+					.openPopup();
+
 					for (var i=0; i<data.retour.bus.length; i++) {
-						
+
 						var iii = ajout_marker(data.retour.bus[i].latitude, data.retour.bus[i].longitude, "label");
 						all_bus_marker_retour.push(iii);
 					}
-					
-				}
 
-				
+				}
 
 		        val_zoom = map.getZoom();
 
@@ -142,11 +147,11 @@ window.onload = function(){
 		                features: [res, trail]
 		            });
 
-		            
+
 		       	}
 
 
-				
+
 	        }).catch(error);
 		},
 		{
@@ -164,7 +169,7 @@ window.onload = function(){
 			var marker = L.marker([parseFloat(lat).toFixed(6), parseFloat(lng).toFixed(6)], {icon: icone}).addTo(map);
 		else
 			var marker = L.marker([parseFloat(lat).toFixed(6), parseFloat(lng).toFixed(6)]).addTo(map);
-		
+
 		//var a = getAddresse(lat, lng, val_zoom, marker);
 		//console.log(a);
 
@@ -189,14 +194,26 @@ window.onload = function(){
 
 } //fin window.onload
 
-
+/*
+fonction d'ajout des alertes en cas d'approche du bus
+*/
+function alertApprocheBus(bus,marker_bus)//reçoit la reference de bus (aller|retour),le marqueur représentant le bus sur la carte
+{
+	if(bus.near_bus.next_arret.nb_arrets_restants<3 && bus.near_bus.next_arret.nb_arrets_restants>0)
+			marker_bus.bindPopup('Le bus est à '+bus.near_bus.next_arret.nb_arrets_restants+' arrets')
+			.openPopup();
+	else if (bus.near_bus.next_arret.nb_arrets_restants==0) {
+			marker_bus.bindPopup('Le bus est arrivé')
+			.openPopup();
+			}
+}
 /*
 	geolocaliser le visteur
 */
 function geolocalise(){
 	if(navigator.geolocation){
 		navigator.geolocation.getCurrentPosition(function(position){
-			
+
 			console.log(position);
 		},
 		function(error){
@@ -214,7 +231,7 @@ function geolocalise(){
 			    case error.UNKNOWN_ERROR:
 			    	info += "Erreur inconnue";
 			    break;
-			    
+
 				}
 			},
 			{maximumAge:600000,enableHighAccuracy:true});
@@ -226,7 +243,7 @@ function geolocalise(){
 */
 function getAddresse(lat, lng, zoom){
 	var zoomr = 18;
-	
+
 	if(zoom > 0)
 		zoomr = zoom;
 
@@ -260,7 +277,7 @@ L.Icon.Pulse = L.DivIcon.extend({
             L.setOptions(this,options);
 
             // css
-            
+
             var uniqueClassName = 'lpi-'+ new Date().getTime()+'-'+Math.round(Math.random()*100000);
 
             var before = ['background-color: '+this.options.color];
@@ -281,7 +298,7 @@ L.Icon.Pulse = L.DivIcon.extend({
                 '.'+uniqueClassName+'{'+before.join(';')+';}',
                 '.'+uniqueClassName+':after{'+after.join(';')+';}',
             ].join('');
- 
+
             var el = document.createElement('style');
             if (el.styleSheet){
                 el.styleSheet.cssText = css;
@@ -296,9 +313,9 @@ L.Icon.Pulse = L.DivIcon.extend({
             this.options.className = this.options.className+' leaflet-pulsing-icon '+uniqueClassName;
 
             // initialize icon
-            
+
             L.DivIcon.prototype.initialize.call(this, options);
-        
+
         }
     });
 
