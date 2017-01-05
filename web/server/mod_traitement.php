@@ -36,10 +36,7 @@
 		  	return rad2deg(a2);
 		}
 		
-		/* recuperer les deux arrets les plus proches */
-		static function get($lat, $lng){
 
-		}
 
 		static function convertirLat($deg_lat,$min_lat,$sec_lat, $orientation){
 			$lat = $deg_lat + $min_lat/60.0 + $sec_lat/3600.0;
@@ -325,10 +322,13 @@
 		}
 
 
-		/* selectionner le bus le plus proche */
+		/*
+		* selectionner le bus le plus proche de l'arret specifié . Si un arret n'est pas precisé, alors on prend le terminus
+		* 
+		*/
 		static function getNearBus($base, $id_ligne, $sens){
 			//selectionner le terminus
-			//$terminus = $base->selectTerminus($id_ligne, $sens)[0];
+			
 			$terminus = $base->selectArretEsp($id_ligne, $sens)[0];
 
 			//selectionner tous les bus 
@@ -362,6 +362,53 @@
 			}else
 				return [];
 			
+		}
+
+				/*
+		* selectionner le bus le plus proche de l'arret specifié . Si un arret n'est pas precisé, alors on prend le terminus
+		* 
+		*/
+		static function getNearBusToArret($base, $id_ligne, $sens, $arret=null){
+			//selectionner le terminus
+			$res = array(
+				"message" => "Pas de bus proche vers l'ESP.",
+				"statut" => -1,
+				"proche" => null
+			);
+
+			if($arret == null){
+
+			}
+			else{
+				$lat_ref = doubleval($arret['latitude_arret']);
+				$lng_ref = doubleval($arret['longitude_arret']);
+				$all_bus = $base->selectAllBusLigneSens("10", $sens);
+
+				if(!empty($all_bus)){
+					$ds_inc = 10;
+					$near_bus_id = -1;
+					for($j=0; $j<=20000; $j = $j + $ds_inc){
+						for($i=0; $i<count($all_bus); $i++){
+							
+							if(GPS::distance($lat_ref, $lng_ref, doubleval($all_bus[$i][3]), doubleval($all_bus[$i][4])) - $j <= $ds_inc){
+								$near_bus_id = $i;
+
+								break;
+							}
+						}
+						
+						if($near_bus_id != -1) break;
+
+					}
+					if($near_bus_id != -1){
+						$res["proche"] = $all_bus[$near_bus_id];
+						$res["statut"] = $near_bus_id;
+					}
+
+				}
+			}
+
+			return $res;
 		}
 
 		static function getNearBusTerminus($base, $id_ligne, $sens){
@@ -566,7 +613,75 @@
 				return $message;
 			}
 
+			/**
+			* Localiser l'arret et le bus les proches de la position de l'internaute vers l'ESP
+			* lat: latitude
+			* lng: longitude
+			* id_ligne: ligne du bus . Par défaut ligne = 1 (ligne 10)
+			* rayon: rayon de la zone à definir. Par défaut = 1 km
+			*/
+			static function serviceClientMonbus($lat, $lng, $id_ligne=1, $rayon=1000){
+				/*
+				* determiner le sens: 
+				* <algo>:si la personne est entre le terminus liberte et l'arret 16 alors sens=allee sinon sens=retour
+				*/
+				 
+				$lat_ref = doubleval($lat);
+				$lng_ref = doubleval($lng);
+				$near_arret = array();
+				$message = "Pas d'arret proche vers l'ESP";
+				$ds_inc = 30;
+				$near_stop_id = -1;
 
+				//on cherche d'abord dans le sens allee
+				$arrets_allee = selectArretsLigneRestant($id_ligne, "A", 1, $methode=PDO::FETCH_ASSOC);
+				for($j=0; $j<=$rayon; $j = $j + $ds_inc){
+					for($i=0; $i<count($arrets_allee); $i++){
+						
+						if(GPS::distance($lat_ref, $lng_ref, doubleval($arrets_allee
+							[$i]['latitude_arret']), doubleval($arrets_allee[$i]['longitude_arret'])) - $j <= 10){
+							$near_stop_id = $i;
+							$near_arret = $arrets_allee[$i];
+							$message = "Un arret proche vers L'ESP (sens liberte vers palais)";
+
+							break;
+						}
+					}
+					
+					if($near_stop_id != -1) break;
+				}
+
+				// si on ne l'a pas trouvé, on cherche dans le sens retour
+				if($near_stop_id == -1){
+					$arrets_retour = selectArretsLigneRestant($id_ligne, "R", 1, $methode=PDO::FETCH_ASSOC);
+					for($j=0; $j<=$rayon; $j = $j + $ds_inc){
+						for($i=0; $i<count($arrets_retour); $i++){
+							
+							if(GPS::distance($lat_ref, $lng_ref, doubleval($arrets_retour
+								[$i]['latitude_arret']), doubleval($arrets_retour[$i]['longitude_arret'])) - $j <= 10){
+								$near_stop_id = $i;
+								$near_arret = $arrets_allee[$i];
+								$message = "Un arret proche vers L'ESP (sens palais vers liberte)";
+
+								break;
+							}
+						}
+						
+						if($near_stop_id != -1) break;
+					}
+				}
+
+				return array(
+						"arret" => array(
+							"message" => $message,
+							"statut" => $near_stop_id,
+							"proche" => $near_arret
+						),
+						"bus" => Controller::getNearBusToArret($next_arret),
+						"sens" => $near_arret['sens']
+					);
+
+			}
 	}
 
 	/***************testes***********************/

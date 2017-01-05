@@ -195,14 +195,14 @@
 		/*
 			selectionner les arrets restants
 		*/
-		function selectArretsLigneRestant($id_ligne, $sens, $num_ref){
+		function selectArretsLigneRestant($id_ligne, $sens, $num_ref, $methode=PDO::FETCH_NUM){
 			if($sens == "A"){
 				$arret_esp = 16;
 			}else{
 				$arret_esp = 11;
 			}
 
-			$req = "SELECT arret.id_arret,arret.nom_arret,arret.latitude_arret,arret.longitude_arret,arretLigne.num_arretDansLigne,arretLigne.distance_tonext FROM arret, arretLigne WHERE arret.id_arret=arretLigne.id_arret AND id_ligne=:id_ligne AND sens=:sens AND num_arretDansLigne>=:num_ref AND num_arretDansLigne<:arret_esp";
+			$req = "SELECT arret.id_arret,arret.nom_arret,arret.latitude_arret,arret.longitude_arret,arretLigne.num_arretDansLigne,arretLigne.distance_tonext,sens FROM arret, arretLigne WHERE arret.id_arret=arretLigne.id_arret AND id_ligne=:id_ligne AND sens=:sens AND num_arretDansLigne>=:num_ref AND num_arretDansLigne<:arret_esp";
 			$array_params = array(
 				":id_ligne" => $id_ligne,
 				":num_ref" => $num_ref,
@@ -210,7 +210,7 @@
 				":sens" => $sens
 			);
 		
-			return $this->select($req, $array_params);
+			return $this->select($req, $array_params, $methode);
 		}
 
 		function selectArretsLigneToTerm($id_ligne, $sens, $num_ref){
@@ -250,7 +250,7 @@
 		}
 
 		/* selectionner tous les bus dans la zone */
-		function selectAllBusZones($delta_lat, $delta_lng, $ligne, $lat_ref, $lng_ref, $sens){
+		function selectAllBusZones($delta_lat, $delta_lng, $ligne, $lat_ref, $lng_ref, $sens, $methode=PDO::FETCH_NUM){
 
 			$req = "SELECT bus.id_bus,positionBus.latitude,positionBus.longitude FROM bus,positionBus WHERE bus.position_courant=positionBus.id_positionBus AND bus.sens_bus=:sens AND bus.nom_ligne=:ligne AND positionBus.latitude<=:max_lat AND positionBus.latitude >=:min_lat AND positionBus.longitude<=:max_lng AND positionBus.longitude>=:min_lng";
 			$array_params = array(	
@@ -262,11 +262,11 @@
 				":sens" => $sens
 			);
 			
-			return $this->select($req, $array_params);
+			return $this->select($req, $array_params, $methode);
 		}
 
 		/* selectionner tous les arrets de la zone sur la ligne demandee */
-		function selectAllArretZones($delta_lat, $delta_lng, $id_ligne, $lat_ref, $lng_ref, $sens){
+		function selectAllArretZones($delta_lat, $delta_lng, $id_ligne, $lat_ref, $lng_ref, $sens, $methode=PDO::FETCH_NUM){
 
 			$req = "SELECT arret.id_arret,arret.nom_arret,arret.latitude_arret,arret.longitude_arret,arretLigne.num_arretDansLigne,arretLigne.distance_tonext FROM arretLigne, arret WHERE arret.id_arret=arretLigne.id_arret AND arretLigne.sens=:sens AND arretLigne.id_ligne=:id_ligne AND arret.latitude_arret<=:max_lat AND arret.latitude_arret >=:min_lat AND arret.longitude_arret<=:max_lng AND arret.longitude_arret>=:min_lng";
 			$array_params = array(	
@@ -278,7 +278,7 @@
 				":sens" => $sens
 			);
 			
-			return $this->select($req, $array_params);
+			return $this->select($req, $array_params, $methode);
 		}
 
 		function selectArretsProches($lat, $lng, $id_ligne){
