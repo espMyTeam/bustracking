@@ -1,13 +1,13 @@
 #include <TinyGPS++.h>
-#include <SoftwareSerial.h>
+#include <AltSoftSerial.h>
 
 
 // **********************parametres du shield gps
 TinyGPSPlus gps; 
-SoftwareSerial SoftSerial(8, 9);
+AltSoftSerial SoftSerial(8, 9);
 
 //******************** gprs
-SoftwareSerial gprs(2, 3);
+AltSoftSerial gprs(2, 3);
 
 char server [] = "bustracking-kamsapp.rhcloud.com";
 int onModulePin=4;

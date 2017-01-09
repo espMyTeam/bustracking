@@ -5,15 +5,15 @@
 	define("BASENAME", "bustracking"); //
 	define("HOSTNAME", "127.8.252.2"); */
 
-	/*define("USERNAME", "abdoulaye");
+	define("USERNAME", "abdoulaye");
 	define("PASSWORD", "kamstelecom"); //sWEuFr7RmjZ4
 	define("BASENAME", "BusTrackingGPS"); //bustracking
-	define("HOSTNAME", "localhost");*/
+	define("HOSTNAME", "localhost");
 
-	define("USERNAME", "root");
+/*	define("USERNAME", "root");
 	define("PASSWORD", "root"); //sWEuFr7RmjZ4
 	define("BASENAME", "c11bustracking"); //bustracking
-	define("HOSTNAME", "localhost");
+	define("HOSTNAME", "localhost");*/
 
 	//nextbus-esp.ucad.sn
 /*	define("USERNAMEFTP", "nextbus16c11");

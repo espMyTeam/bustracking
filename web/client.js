@@ -56,7 +56,7 @@ function geolocaliseVisiteur(){
 		"altitude": null,
 		"vitesse" : null,
 		"precision" : null,
-		"direction": null
+		"direction": null,
 		"message" : null
 	}
 
