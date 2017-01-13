@@ -87,6 +87,11 @@
 		}
 	}
 
+
+	/**
+	* Classe pour gérer toutes les classes
+	*
+	*/
 	
 	class Controller{
 

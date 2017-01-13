@@ -64,15 +64,23 @@ TODO
 -> tracer l'itinéraire
 -> application mobile
 -> Design
--> 
+
 --------------- SNAP-INFO: PARTIE MOBILE -----------------------
 TODO
 -> serveur de traitement
 -> mobile
+-> Reconnaissance d'objets (android et web)
+-> page de localisation (mobile) gps+gsm
+-> menu de préference (setinng)
+-> stockage dans une base de données mobile
+-> barre de progression
 
 DONE
 -> interface web
 -> photo
+-> mobile:
+	-> menu
+	-> 
 
 DOING
 -> récupération de la position
